@@ -3,9 +3,9 @@
 Share car and bike rides: find a seat going your way, book it, or offer your own free seat. Installable as an app (PWA) and opens offline.
 
 - `index.html` is the whole site.
-- `api/` has three small serverless functions (`state`, `rides`, `bookings`) that store rides in Upstash Redis.
+- `api/` has three small serverless functions (`state`, `rides`, `bookings`) that store rides in Postgres (Supabase, Neon) or Upstash Redis.
 - `manifest.webmanifest`, `sw.js` and `icons/` make it installable and let it open offline.
-- No build step and no dependencies.
+- No build step. The only dependency is `pg`, for Postgres.
 
 ## Deploy to Vercel
 
@@ -13,7 +13,12 @@ Import the repo at https://vercel.com/new, set **Root Directory** to the folder 
 
 ## Shared rides
 
-Connect **Upstash for Redis** under the project's **Storage** tab, then redeploy. Vercel adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` for you. Without it the site still works, but rides are saved on each visitor's device only.
+Connect a database under the project's **Storage** tab, then redeploy:
+
+- **Supabase or Neon (Postgres):** uses `POSTGRES_URL`. On first use the API creates a table `saathi.items` in its own `saathi` schema, with row-level security on, so it stays out of Supabase's public REST API.
+- **Upstash for Redis:** uses `KV_REST_API_URL` and `KV_REST_API_TOKEN`. If both are set, Redis is used.
+
+Without a database the site still works, but rides are saved on each visitor's device only. A free Supabase project pauses after a week without activity; open its dashboard to wake it.
 
 ## Location features (free, no keys)
 
