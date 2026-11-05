@@ -1,9 +1,9 @@
 // Saathi service worker: keeps the app shell, icons and fonts so the app opens
 // offline. Ride data (/api/*) always goes to the network; the page keeps its own
 // copy of the last rides it saw.
-const VERSION = "saathi-v2";
+const VERSION = "saathi-v3";
 const RUNTIME = VERSION + "-rt";
-const SHELL = ["/", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png"];
+const SHELL = ["/", "/manifest.webmanifest", "/icons/logo.svg", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

@@ -4,6 +4,7 @@
   "description": "Share car and bike rides",
   "engines": { "node": ">=18" },
   "dependencies": {
+    "nodemailer": "6.9.16",
     "pg": "8.11.3"
   }
 }
