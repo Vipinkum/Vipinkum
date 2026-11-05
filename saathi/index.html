@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Saathi · Share car and bike rides</title>
+<meta name="description" content="Book a seat in a car or on a bike with someone already going your way, and split the fuel cost.">
+<meta name="theme-color" content="#0b6a44">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 26'%3E%3Cpath d='M1.5 11a8.5 8.5 0 0 1 17 0v13.5h-17z' fill='%23fff' stroke='%2317201a' stroke-width='1.6'/%3E%3Cpath d='M1.5 11a8.5 8.5 0 0 1 17 0z' fill='%23f2b600' stroke='%2317201a' stroke-width='1.6'/%3E%3C/svg%3E">
+<style>html{-webkit-text-size-adjust:100%}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600&family=Overpass+Mono:wght@500;600&family=Overpass:wght@600;700;800&display=swap">
+<style>
+/* Layout: sticky top bar, one centred column; the search panel is a green Indian highway direction sign, distances are shown as roadside milestones. */
+:root{
+  --bg:#eceee9; --surface:#ffffff; --surface-2:#f4f5f1; --ink:#17201a; --muted:#57635b; --line:#d3d9d1;
+  --sign:#0b6a44; --sign-2:#085436; --sign-ink:#ffffff; --sign-soft:rgba(255,255,255,.84); --sign-rule:rgba(255,255,255,.92); --sign-faint:rgba(255,255,255,.38);
+  --cap:#f2b600; --cap-ink:#1d1a0e; --stone:#ffffff; --stone-ink:#17201a;
+  --field:#ffffff; --field-ink:#17201a;
+  --warn:#9a5200; --danger:#b3261e; --focus:#f2b600; --scrim:rgba(8,12,10,.55); --shadow:rgba(10,20,14,.18);
+  --f-display:"Overpass","Hind","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Hind","Segoe UI",system-ui,sans-serif;
+  --f-mono:"Overpass Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1311; --surface:#171c19; --surface-2:#1e2420; --ink:#e6ebe5; --muted:#9aa59d; --line:#2c342f;
+    --sign:#0f7a4f; --sign-2:#0b6040; --sign-ink:#ffffff; --sign-soft:rgba(255,255,255,.84); --sign-rule:rgba(255,255,255,.88); --sign-faint:rgba(255,255,255,.35);
+    --cap:#f4c22b; --cap-ink:#1d1a0e; --stone:#e9ece6; --stone-ink:#17201a;
+    --field:#ffffff; --field-ink:#17201a;
+    --warn:#e7a54c; --danger:#ff8f86; --focus:#f4c22b; --scrim:rgba(0,0,0,.65); --shadow:rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1311; --surface:#171c19; --surface-2:#1e2420; --ink:#e6ebe5; --muted:#9aa59d; --line:#2c342f;
+  --sign:#0f7a4f; --sign-2:#0b6040; --sign-ink:#ffffff; --sign-soft:rgba(255,255,255,.84); --sign-rule:rgba(255,255,255,.88); --sign-faint:rgba(255,255,255,.35);
+  --cap:#f4c22b; --cap-ink:#1d1a0e; --stone:#e9ece6; --stone-ink:#17201a;
+  --field:#ffffff; --field-ink:#17201a;
+  --warn:#e7a54c; --danger:#ff8f86; --focus:#f4c22b; --scrim:rgba(0,0,0,.65); --shadow:rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1060px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:24px;min-height:62px}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--f-display);font-weight:800;font-size:25px;letter-spacing:-.02em;color:var(--ink);text-decoration:none;line-height:1}
+.brand svg{width:20px;height:26px;flex:none}
+.brand span{padding-top:4px}
+.tabs{display:flex;gap:6px;margin-left:auto}
+.tabs a{font-family:var(--f-display);font-weight:700;font-size:15px;color:var(--muted);text-decoration:none;padding:21px 10px 16px;border-bottom:3px solid transparent;white-space:nowrap;line-height:1}
+.tabs a:hover{color:var(--ink)}
+.tabs a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--sign)}
+@media (max-width:640px){
+  .top-in{flex-wrap:wrap;gap:0;padding-top:10px}
+  .tabs{margin-left:0;width:100%;justify-content:space-between;gap:0}
+  .tabs a{padding:14px 4px 11px;font-size:14.5px}
+}
+
+main.wrap{padding-block:22px 96px}
+.notice{margin:0 0 16px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:14.5px;color:var(--ink)}
+
+/* highway sign search */
+.sign{position:relative;background:var(--sign);color:var(--sign-ink);border-radius:16px;padding:26px 26px 22px;box-shadow:inset 0 0 0 5px var(--sign),inset 0 0 0 7px var(--sign-rule);display:grid;gap:20px}
+.sign-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.sign h1{font-weight:800;font-size:clamp(30px,4.6vw,46px);line-height:1.02;letter-spacing:-.02em;padding-top:4px}
+.sign-head p{margin:8px 0 0;max-width:54ch;color:var(--sign-soft);font-size:16.5px}
+.sign-arrow{width:62px;height:62px;flex:none;color:var(--sign-ink)}
+.sign-fields{display:grid;grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr) 164px 92px auto;gap:10px;align-items:end;grid-template-areas:"from swap to date seats go"}
+.f-from{grid-area:from}.f-to{grid-area:to}.f-date{grid-area:date}.f-seats{grid-area:seats}.swap{grid-area:swap}.go{grid-area:go}
+.fld{display:grid;gap:6px;min-width:0}
+.fld>span{font-family:var(--f-display);font-weight:700;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--sign-soft);line-height:1}
+.fld input,.fld select{width:100%;height:50px;border:0;border-radius:8px;background:var(--field);color:var(--field-ink);font:500 16.5px var(--f-body);padding:2px 12px 0;color-scheme:light;min-width:0}
+.fld input::placeholder{color:#7d877f}
+.swap{height:50px;width:46px;border-radius:8px;border:1.5px solid var(--sign-rule);background:transparent;color:var(--sign-ink);display:grid;place-items:center;cursor:pointer}
+.swap svg{width:22px;height:22px}
+.swap:hover{background:var(--sign-2)}
+.go{height:50px;padding:4px 26px 0;border:0;border-radius:8px;background:var(--cap);color:var(--cap-ink);font:800 17px var(--f-display);cursor:pointer;white-space:nowrap}
+.go:hover{filter:brightness(1.05)}
+.sign-foot{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center}
+.seg{display:inline-flex;background:var(--sign-2);border-radius:999px;padding:3px;gap:2px}
+.seg label{position:relative;display:inline-flex;align-items:center;gap:6px;padding:7px 14px 5px;border-radius:999px;font:700 14px var(--f-display);cursor:pointer;color:var(--sign-soft);line-height:1}
+.seg label svg{width:18px;height:18px;margin-top:-3px}
+.seg input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.seg label:has(input:checked){background:var(--sign-ink);color:var(--sign)}
+.seg label:has(input:focus-visible){outline:3px solid var(--focus);outline-offset:1px}
+.popular{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px;color:var(--sign-soft)}
+.chip{border:1px solid var(--sign-faint);background:transparent;color:var(--sign-ink);border-radius:999px;padding:5px 12px 3px;font:500 14px var(--f-body);cursor:pointer}
+.chip:hover{border-color:var(--sign-rule);background:var(--sign-2)}
+@media (max-width:820px){
+  .sign{padding:22px 18px 18px}
+  .sign-arrow{display:none}
+  .sign-fields{grid-template-columns:minmax(0,1fr) 92px;grid-template-areas:"from swap" "to swap" "date seats" "go go"}
+  .swap{justify-self:center;align-self:center}
+  .swap svg{transform:rotate(90deg)}
+  .go{width:100%}
+}
+
+/* results */
+.results-head{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;margin:30px 0 4px;flex-wrap:wrap}
+.results-head h2{font-weight:800;font-size:23px;letter-spacing:-.01em;min-width:0;overflow-wrap:anywhere}
+.tools{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--muted)}
+.tools select{height:38px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);padding:0 10px}
+.linkbtn{background:none;border:0;padding:4px 2px;color:var(--sign);font:700 14px var(--f-display);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.day{font-family:var(--f-display);font-weight:700;font-size:13px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:20px 0 9px}
+.list{display:grid;gap:10px}
+.group-note{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:34px 0 0;padding-top:20px;border-top:1px solid var(--line)}
+.group-note h3{font-weight:800;font-size:19px}
+.group-note p{margin:0;color:var(--muted);font-size:14.5px}
+
+.ride{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px 20px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px 14px;color:var(--ink);cursor:pointer;transition:border-color .15s,box-shadow .15s}
+button.ride:hover{border-color:var(--sign);box-shadow:0 2px 0 var(--sign)}
+.ride.dim{opacity:.62}
+.legs{display:grid;grid-template-columns:auto 12px minmax(0,1fr);column-gap:11px;row-gap:3px;align-items:center;min-width:0}
+.legs .t{font:600 17px var(--f-mono);font-variant-numeric:tabular-nums;line-height:1.1}
+.legs .t sup{font-size:10px;color:var(--muted);margin-left:1px}
+.legs .p{font:700 18.5px var(--f-display);line-height:1.15;min-width:0;overflow-wrap:anywhere;padding-top:3px}
+.legs .dot{width:12px;height:12px;border-radius:50%;border:2.5px solid var(--ink);background:var(--surface)}
+.legs .dot.end{background:var(--ink)}
+.legs .bar{display:block;width:2.5px;height:20px;background:var(--ink);justify-self:center}
+.legs .dur{font:500 12px var(--f-mono);color:var(--muted)}
+.price{display:grid;align-content:start;justify-items:end;gap:1px;text-align:right}
+.price .amt{font:800 25px var(--f-display);letter-spacing:-.01em;line-height:1.1}
+.price .per{font-size:13px;color:var(--muted)}
+.meta{grid-column:1/-1;display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:12px;min-width:0}
+.who{display:inline-flex;align-items:center;gap:8px;min-width:0;font-weight:600}
+.av{width:30px;height:30px;border-radius:50%;object-fit:cover;flex:none;display:inline-grid;place-items:center;font:700 12.5px var(--f-display);color:var(--sign-ink);background:var(--sign);padding-top:2px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);min-width:0}
+.tag svg{width:19px;height:19px;flex:none;color:var(--ink)}
+.pill{font:700 11.5px var(--f-display);letter-spacing:.05em;text-transform:uppercase;padding:4px 8px 2px;border-radius:6px;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);white-space:nowrap;line-height:1.2}
+.pill.warn{color:var(--warn);border-color:currentColor;background:transparent}
+.pill.sample{background:var(--cap);color:var(--cap-ink);border-color:var(--cap)}
+.status{font-size:14px;font-weight:600;color:var(--sign)}
+.ms{display:inline-flex;flex-direction:column;align-items:center;width:62px;flex:none;margin-left:auto;border:1.5px solid var(--stone-ink);border-radius:31px 31px 3px 3px/24px 24px 3px 3px;overflow:hidden;background:var(--stone);color:var(--stone-ink);line-height:1}
+.ms i{display:block;width:100%;height:17px;background:var(--cap);border-bottom:1.5px solid var(--stone-ink)}
+.ms span{font:800 9.5px var(--f-display);letter-spacing:.06em;text-transform:uppercase;padding:5px 5px 1px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms b{font:600 15px var(--f-mono);padding:1px 0 5px;font-variant-numeric:tabular-nums}
+@media (max-width:520px){
+  .ride{padding:14px 14px 12px;gap:12px 12px}
+  .price .amt{font-size:22px}
+  .legs .p{font-size:17px}
+}
+
+.empty{border:1.5px dashed var(--line);border-radius:12px;padding:26px 20px;text-align:center;color:var(--muted);display:grid;gap:12px;justify-items:center;margin-top:12px}
+.empty b{color:var(--ink);font-family:var(--f-display);font-size:18px}
+.loading{color:var(--muted);font-size:15px;margin-top:14px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:4px 22px 0;border-radius:10px;border:0;font:800 16px var(--f-display);cursor:pointer;text-decoration:none;line-height:1}
+.btn.primary{background:var(--sign);color:var(--sign-ink)}
+.btn.primary:hover{background:var(--sign-2)}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.danger{background:transparent;border:1.5px solid var(--danger);color:var(--danger)}
+.btn.danger.solid{background:var(--danger);color:var(--surface)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.wide{width:100%}
+
+/* page heads */
+.page-head{display:grid;gap:6px;margin:6px 0 0}
+.h1{font-weight:800;font-size:clamp(30px,4.2vw,42px);letter-spacing:-.02em;line-height:1.05}
+.lede{margin:0;color:var(--muted);max-width:60ch;font-size:16.5px}
+.eyebrow{font-family:var(--f-display);font-weight:700;font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+
+/* offer */
+.offer{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:28px;align-items:start;margin-top:22px}
+@media (max-width:880px){.offer{grid-template-columns:minmax(0,1fr)}}
+.form{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;display:grid;gap:18px;min-width:0}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:540px){.row2:not(.keep){grid-template-columns:1fr}}
+.f{display:grid;gap:7px;min-width:0;align-content:start}
+.f>span,.f>legend,.f>.lbl{font:700 12.5px var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);line-height:1;padding:0}
+.f em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:600}
+.f input,.f select,.f textarea{width:100%;min-height:48px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink);font:500 16px var(--f-body);padding:3px 12px 0;min-width:0}
+.f textarea{min-height:86px;padding:10px 12px;resize:vertical;line-height:1.45}
+.f input:focus,.f textarea:focus{border-color:var(--sign);outline:none}
+.f input:focus-visible,.f textarea:focus-visible{outline:3px solid var(--focus);outline-offset:1px}
+.vpick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:7px}
+.vpick label{position:relative;border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:center;cursor:pointer;background:var(--surface-2)}
+.vpick label svg{width:30px;height:30px;flex:none}
+.vpick b{display:block;font-family:var(--f-display);font-size:16px;line-height:1.1;padding-top:3px}
+.vpick small{color:var(--muted);font-size:13.5px}
+.vpick input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.vpick label:has(input:checked){border-color:var(--sign);box-shadow:inset 0 0 0 1.5px var(--sign);background:var(--surface)}
+.vpick label:has(input:focus-visible){outline:3px solid var(--focus);outline-offset:2px}
+@media (max-width:420px){.vpick{grid-template-columns:1fr}}
+.hint{margin:0;font-size:14px;color:var(--muted)}
+.hint b{color:var(--ink)}
+.stepper{display:inline-flex;align-items:center;border:1.5px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface-2);width:max-content}
+.stepper button{width:46px;height:46px;border:0;background:transparent;font:700 22px var(--f-display);cursor:pointer;color:var(--ink)}
+.stepper button:disabled{opacity:.35;cursor:not-allowed}
+.stepper output{min-width:36px;text-align:center;font:600 18px var(--f-mono)}
+.suggest{display:flex;align-items:center;justify-content:space-between;gap:10px 14px;flex-wrap:wrap;font-size:14.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.suggest .btn{min-height:38px;padding:3px 14px 0;font-size:14px}
+.checks{display:grid;gap:12px}
+.check{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+.check input{width:22px;height:22px;margin:2px 0 0;accent-color:var(--sign);flex:none}
+.check b{display:block;font-weight:600}
+.check small{color:var(--muted);font-size:13.5px}
+.count{justify-self:end}
+.err{margin:0;color:var(--danger);font-size:14.5px;font-weight:500}
+.preview{position:sticky;top:86px;display:grid;gap:10px;min-width:0}
+.preview .ride{cursor:default}
+
+/* trips */
+.trips{display:grid;gap:8px;margin-top:14px}
+#trips-body h2{font-weight:800;font-size:22px;margin:30px 0 2px}
+
+/* sheet */
+.sheet{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.sheet-bg{position:absolute;inset:0;background:var(--scrim)}
+.sheet-card{position:relative;width:min(560px,100%);max-height:100%;overflow:auto;background:var(--surface);border-radius:16px;padding:22px;box-shadow:0 24px 60px var(--shadow);display:grid;gap:18px;outline:none}
+@media (max-width:600px){
+  .sheet{place-items:end stretch;padding:max(24px,env(safe-area-inset-top,0px)) 0 0}
+  .sheet-card{border-radius:18px 18px 0 0;max-height:100%;padding:20px max(18px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
+}
+.sh-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.sh-head h2{font-weight:800;font-size:25px;letter-spacing:-.01em;line-height:1.1;margin-top:4px;overflow-wrap:anywhere}
+.x{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer;flex:none}
+.x svg{width:18px;height:18px}
+.legs.big .t{font-size:20px}.legs.big .p{font-size:21px}.legs.big .bar{height:30px}
+.facts{display:flex;align-items:center;gap:14px;background:var(--surface-2);border-radius:12px;padding:12px 14px}
+.facts .ms{margin-left:0}
+.facts>div>b{display:block;font-family:var(--f-display);font-size:17px;padding-top:2px}
+.facts>div>span{color:var(--muted);font-size:14px}
+.drv{display:flex;align-items:center;gap:12px;min-width:0}
+.drv .av{width:44px;height:44px;font-size:16px}
+.drv .who-t{min-width:0;flex:1}
+.drv .who-t b{display:block;font-family:var(--f-display);font-size:17px;padding-top:2px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.note{margin:0;border-left:3px solid var(--cap);padding:4px 0 4px 12px;color:var(--ink);font-size:15.5px}
+.pax{display:grid;gap:8px}
+.pax-row{display:flex;align-items:center;gap:10px;font-weight:500}
+.pax-row .s{margin-left:auto;color:var(--muted);font-size:14px}
+.foot{display:grid;gap:12px;border-top:1px solid var(--line);padding-top:16px}
+.foot .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.foot .row .btn{flex:1}
+.booked{display:flex;gap:10px;align-items:center;font-weight:600;color:var(--sign)}
+.booked svg{width:22px;height:22px;flex:none}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 18px 10px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;max-width:calc(100% - 32px)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#find" aria-label="Saathi, find a ride">
+      <svg viewBox="0 0 20 26" aria-hidden="true"><path d="M1.5 11a8.5 8.5 0 0 1 17 0v13.5h-17z" fill="var(--stone)" stroke="var(--ink)" stroke-width="1.6"/><path d="M1.5 11a8.5 8.5 0 0 1 17 0z" fill="var(--cap)" stroke="var(--ink)" stroke-width="1.6"/></svg>
+      <span>saathi</span>
+    </a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#find" data-view="find">Find a ride</a>
+      <a href="#offer" data-view="offer">Offer a ride</a>
+      <a href="#trips" data-view="trips">My trips</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p id="notice" class="notice" hidden></p>
+
+  <section id="v-find" class="view">
+    <form id="search" class="sign" role="search">
+      <div class="sign-head">
+        <div>
+          <h1>Where are you headed?</h1>
+          <p>Book a seat in a car or on a bike with someone already going your way, and split the fuel cost.</p>
+        </div>
+        <svg class="sign-arrow" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6 54 30H40v28H24V30H10z" fill="currentColor"/></svg>
+      </div>
+      <div class="sign-fields">
+        <label class="fld f-from"><span>Leaving from</span><input id="s-from" list="places" placeholder="Delhi" autocomplete="off"></label>
+        <button type="button" class="swap" id="s-swap" aria-label="Swap leaving from and going to"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h15l-4-4M20 16H5l4 4"/></svg></button>
+        <label class="fld f-to"><span>Going to</span><input id="s-to" list="places" placeholder="Jaipur" autocomplete="off"></label>
+        <label class="fld f-date"><span>Date</span><input id="s-date" type="date"></label>
+        <label class="fld f-seats"><span>Seats</span><select id="s-seats"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+        <button class="go" type="submit">Search</button>
+      </div>
+      <div class="sign-foot">
+        <div class="seg" role="radiogroup" aria-label="Vehicle">
+          <label><input type="radio" name="s-veh" value="any" checked>Any</label>
+          <label><input type="radio" name="s-veh" value="car"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3.5v-4.5L6 7h11l3 5.5H21V17h-1.5"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5M4 12.5h16"/></svg>Car</label>
+          <label><input type="radio" name="s-veh" value="bike"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="16.5" r="3"/><circle cx="18.5" cy="16.5" r="3"/><path d="M5.5 16.5 9 11h6l3.5 5.5M15 11l-1.5-4H11M9 11l2.5 5.5h3"/></svg>Bike</label>
+        </div>
+        <div class="popular" id="popular"><span>Popular:</span></div>
+      </div>
+    </form>
+
+    <div class="results-head">
+      <h2 id="r-title">Upcoming rides</h2>
+      <div class="tools">
+        <button type="button" class="linkbtn" id="r-clear" hidden>Clear search</button>
+        <label for="r-sort">Sort</label>
+        <select id="r-sort"><option value="time">Earliest first</option><option value="price">Cheapest first</option></select>
+      </div>
+    </div>
+    <div id="r-list"></div>
+    <div id="r-samples"></div>
+  </section>
+
+  <section id="v-offer" class="view" hidden>
+    <div class="page-head">
+      <h1 class="h1">Offer a ride</h1>
+      <p class="lede">Driving somewhere with a free seat? Post your route, set a fair price per seat, and people going the same way can book it.</p>
+    </div>
+    <div class="offer">
+      <form id="offer" class="form" novalidate>
+        <fieldset class="f">
+          <legend>Vehicle</legend>
+          <div class="vpick">
+            <label><input type="radio" name="o-veh" id="o-car" value="car" checked>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3.5v-4.5L6 7h11l3 5.5H21V17h-1.5"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5M4 12.5h16"/></svg>
+              <span><b>Car</b><small>Up to 6 passengers</small></span></label>
+            <label><input type="radio" name="o-veh" id="o-bike" value="bike">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="16.5" r="3"/><circle cx="18.5" cy="16.5" r="3"/><path d="M5.5 16.5 9 11h6l3.5 5.5M15 11l-1.5-4H11M9 11l2.5 5.5h3"/></svg>
+              <span><b>Bike or scooter</b><small>One pillion rider</small></span></label>
+          </div>
+        </fieldset>
+        <div class="row2">
+          <label class="f"><span>Leaving from</span><input id="o-from" list="places" placeholder="Noida" autocomplete="off"></label>
+          <label class="f"><span>Going to</span><input id="o-to" list="places" placeholder="Agra" autocomplete="off"></label>
+        </div>
+        <p class="hint" id="o-route">Pick places from the list to get a distance and price estimate.</p>
+        <div class="row2 keep">
+          <label class="f"><span>Date</span><input id="o-date" type="date"></label>
+          <label class="f"><span>Leaving at</span><input id="o-time" type="time" value="08:00"></label>
+        </div>
+        <div class="row2 keep">
+          <div class="f">
+            <span class="lbl" id="o-seats-l">Seats to offer</span>
+            <div class="stepper" role="group" aria-labelledby="o-seats-l">
+              <button type="button" id="o-minus" aria-label="One seat fewer">−</button>
+              <output id="o-seats" aria-live="polite">3</output>
+              <button type="button" id="o-plus" aria-label="One seat more">+</button>
+            </div>
+          </div>
+          <label class="f"><span>Price per seat (₹)</span><input id="o-price" type="number" inputmode="numeric" min="0" max="10000" step="10"></label>
+        </div>
+        <div class="suggest" id="o-suggest" hidden></div>
+        <label class="f"><span>Vehicle details <em>(optional)</em></span><input id="o-vname" maxlength="40" placeholder="White Swift Dzire" autocomplete="off"></label>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="o-women"><span><b>Women passengers only</b><small>Shown on your listing so only women book.</small></span></label>
+          <label class="check" id="o-helmet-row" hidden><input type="checkbox" id="o-helmet" checked><span><b>I'll carry a helmet for my rider</b><small>Riders without their own helmet look for this.</small></span></label>
+        </div>
+        <label class="f"><span>Your name</span><input id="o-name" maxlength="40" autocomplete="given-name" placeholder="Shown to passengers on your listing"></label>
+        <label class="f"><span>Note for passengers <em>(optional)</em></span><textarea id="o-note" maxlength="200" placeholder="Pickup point, stops on the way, luggage space"></textarea><small class="hint count" id="o-count">0 / 200</small></label>
+        <p class="err" id="o-err" role="alert" hidden></p>
+        <button class="btn primary" id="o-submit" type="submit">Publish ride</button>
+      </form>
+      <aside class="preview" aria-label="Listing preview">
+        <div class="eyebrow">How your listing will look</div>
+        <div id="o-preview"></div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="v-trips" class="view" hidden>
+    <div class="page-head">
+      <h1 class="h1">My trips</h1>
+      <p class="lede">Seats you've booked and rides you're offering.</p>
+    </div>
+    <div id="trips-body"></div>
+  </section>
+</main>
+
+<div id="sheet" class="sheet" hidden>
+  <div class="sheet-bg" data-close></div>
+  <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sh-title" tabindex="-1" id="sheet-card"></div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<datalist id="places"></datalist>
+
+<script>
+(function(){
+"use strict";
+/* Set to false to hide the sample listings once real rides are coming in. */
+const SHOW_SAMPLES = true;
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad=n=>String(n).padStart(2,"0");
+const ymd=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const dayStr=(off=0)=>{const d=new Date();d.setDate(d.getDate()+off);return ymd(d);};
+const nowHM=()=>{const d=new Date();return pad(d.getHours())+":"+pad(d.getMinutes());};
+const key=s=>String(s||"").trim().toLowerCase();
+const inr=n=>"₹"+Number(n||0).toLocaleString("en-IN");
+const store={get(k){try{return localStorage.getItem(k);}catch(_){return null;}},set(k,v){try{localStorage.setItem(k,v);return true;}catch(_){return false;}}};
+
+const ICON={
+  car:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3.5v-4.5L6 7h11l3 5.5H21V17h-1.5"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5M4 12.5h16"/></svg>',
+  bike:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="16.5" r="3"/><circle cx="18.5" cy="16.5" r="3"/><path d="M5.5 16.5 9 11h6l3.5 5.5M15 11l-1.5-4H11M9 11l2.5 5.5h3"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  tick:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m7.5 12.5 3 3 6-6.5"/></svg>'
+};
+
+/* Places with coordinates, for distance and travel-time estimates */
+const PLACES=[
+ ["Delhi",28.6139,77.2090],["Noida",28.5355,77.3910],["Noida Sector 62",28.6270,77.3727],["Noida Sector 18",28.5708,77.3261],
+ ["Greater Noida",28.4744,77.5040],["Ghaziabad",28.6692,77.4538],["Indirapuram",28.6412,77.3711],["Gurugram",28.4595,77.0266],
+ ["Cyber City",28.4950,77.0895],["Faridabad",28.4089,77.3178],["Connaught Place",28.6315,77.2167],["Nehru Place",28.5494,77.2519],
+ ["Jaipur",26.9124,75.7873],["Agra",27.1767,78.0081],["Mathura",27.4924,77.6737],["Meerut",28.9845,77.7064],
+ ["Chandigarh",30.7333,76.7794],["Dehradun",30.3165,78.0322],["Rishikesh",30.0869,78.2676],["Haridwar",29.9457,78.1642],
+ ["Shimla",31.1048,77.1734],["Lucknow",26.8467,80.9462],["Mumbai",19.0760,72.8777],["Pune",18.5204,73.8567],
+ ["Bengaluru",12.9716,77.5946],["Mysuru",12.2958,76.6394],["Chennai",13.0827,80.2707],["Puducherry",11.9416,79.8083],
+ ["Hyderabad",17.3850,78.4867],["Ahmedabad",23.0225,72.5714],["Kolkata",22.5726,88.3639]
+];
+const PMAP=new Map(PLACES.map(p=>[key(p[0]),p]));
+function hav(a,b){const R=6371,r=x=>x*Math.PI/180;const dLa=r(b[1]-a[1]),dLo=r(b[2]-a[2]);const s=Math.sin(dLa/2)**2+Math.cos(r(a[1]))*Math.cos(r(b[1]))*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(s));}
+function distKm(from,to){const A=PMAP.get(key(from)),B=PMAP.get(key(to));if(!A||!B||A===B)return null;const d=hav(A,B);return Math.max(1,Math.round(d*(d<40?1.4:1.2)));}
+function durMin(km,veh){if(km==null)return null;const v=veh==="bike"?30:(km<60?35:58);return Math.max(5,Math.round(km/v*60/5)*5);}
+function suggest(km,veh){if(km==null)return null;return veh==="bike"?Math.max(40,Math.round(km*3/10)*10):Math.max(80,Math.round(km*2/10)*10);}
+function fmtDur(m){const h=Math.floor(m/60),mm=m%60;return h?(h+"h"+(mm?" "+pad(mm)+"m":"")):mm+" min";}
+function addTime(t,min){const[h,m]=t.split(":").map(Number);let x=h*60+m+min;const plus=Math.floor(x/1440);x%=1440;return{t:pad(Math.floor(x/60))+":"+pad(x%60),plus};}
+function dayLabel(date){if(!date)return"";const d=new Date(date+"T00:00:00");const f=d.toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"});if(date===dayStr(0))return"Today · "+f;if(date===dayStr(1))return"Tomorrow · "+f;return f;}
+function shortName(n){const w=String(n).trim().split(/\s+/);if(w.length===1)return w[0];if(/^sector$/i.test(w[1])&&w[2])return"Sec "+w[2];return w.map(x=>x[0]).join("").slice(0,4);}
+function initials(n){const w=String(n||"?").trim().split(/\s+/);return((w[0]||"?")[0]+(w[1]?w[1][0]:"")).toUpperCase();}
+
+/* Sample listings: shown so the board is never blank; never bookable, never saved */
+const SAMPLE_DEF=[
+ {from:"Delhi",to:"Jaipur",d:1,time:"06:30",vehicle:"car",vehicleName:"White Swift Dzire",seats:3,booked:1,driverName:"Ankit",note:"Pickup at Dhaula Kuan metro. One chai stop on the way."},
+ {from:"Noida",to:"Agra",d:1,time:"08:00",vehicle:"car",vehicleName:"Grey Hyundai Creta",seats:3,booked:0,driverName:"Meera",womenOnly:true,note:"Taking the Yamuna Expressway. Women passengers only."},
+ {from:"Noida Sector 62",to:"Connaught Place",d:1,time:"09:15",vehicle:"bike",vehicleName:"Honda Activa 6G",seats:1,booked:0,driverName:"Kabir",helmet:true,note:"I carry a second helmet. Can drop you at Barakhamba Road."},
+ {from:"Gurugram",to:"Chandigarh",d:2,time:"07:00",vehicle:"car",vehicleName:"Blue Tata Nexon EV",seats:2,booked:1,driverName:"Simran",note:"Electric car, one 20-minute charging stop near Karnal."},
+ {from:"Indirapuram",to:"Noida Sector 18",d:2,time:"08:40",vehicle:"bike",vehicleName:"Bajaj Pulsar 150",seats:1,booked:0,driverName:"Rahul",helmet:true,note:"Office run at the same time every weekday."},
+ {from:"Bengaluru",to:"Mysuru",d:3,time:"07:45",vehicle:"car",vehicleName:"Red Kia Sonet",seats:3,booked:2,driverName:"Divya",note:"Breakfast stop at Maddur for vada."},
+ {from:"Mumbai",to:"Pune",d:3,time:"18:30",vehicle:"car",vehicleName:"Black Mahindra XUV700",seats:4,booked:1,driverName:"Arjun",note:"Expressway all the way. Room for one cabin bag each."}
+];
+const SAMPLES=SAMPLE_DEF.map((s,i)=>{const km=distKm(s.from,s.to);return Object.assign({},s,{id:"sample-"+(i+1),date:dayStr(s.d),km,price:suggest(km,s.vehicle),sample:true,status:"open",driverUid:"",womenOnly:!!s.womenOnly,helmet:!!s.helmet,createdAt:0});});
+
+/* mode: loading → live (shared API) or local (this browser only) */
+const S={mode:"loading",err:false,key:null,uid:null,name:"",rides:[],bookings:[],
+  q:{from:"",to:"",date:"",seats:1,vehicle:"any"},sort:"time",view:"find",openId:null,opener:null,bookN:1,confirm:null,busy:false};
+
+/* ---------- data shaping ---------- */
+const str=(v,n)=>typeof v==="string"?v.slice(0,n):"";
+const clampInt=(v,a,b)=>{v=Math.round(Number(v));return Number.isFinite(v)?Math.min(b,Math.max(a,v)):a;};
+function normRide(d){const v=d.vehicle==="bike"?"bike":"car";const from=str(d.from,60),to=str(d.to,60);
+  return{id:str(d.id,64),from,to,date:/^\d{4}-\d{2}-\d{2}$/.test(d.date)?d.date:"",time:/^\d{2}:\d{2}$/.test(d.time)?d.time:"00:00",vehicle:v,vehicleName:str(d.vehicleName,40),
+    seats:clampInt(d.seats,1,v==="bike"?1:6),price:clampInt(d.price,0,10000),womenOnly:d.womenOnly===true,helmet:d.helmet===true,note:str(d.note,200),
+    driverUid:typeof d.driverUid==="string"?d.driverUid:"",driverName:str(d.driverName,40),status:d.status==="cancelled"?"cancelled":"open",createdAt:Number(d.createdAt)||0,km:distKm(from,to),sample:false};}
+function normBooking(d){return{id:str(d.id,64),rideId:str(d.rideId,64),uid:typeof d.uid==="string"?d.uid:"",name:str(d.name,40),seats:clampInt(d.seats,1,6),createdAt:Number(d.createdAt)||0};}
+const bookingsFor=id=>S.bookings.filter(b=>b.rideId===id);
+const bookedSeats=r=>r.sample?r.booked:bookingsFor(r.id).reduce((a,b)=>a+b.seats,0);
+const seatsLeft=r=>Math.max(0,r.seats-bookedSeats(r));
+const myBookings=id=>S.uid?S.bookings.filter(b=>b.rideId===id&&b.uid===S.uid):[];
+const isPast=r=>!r.date||r.date<dayStr(0)||(r.date===dayStr(0)&&r.time<nowHM());
+const rideById=id=>S.rides.find(r=>r.id===id)||SAMPLES.find(r=>r.id===id)||null;
+const ready=()=>S.mode==="live"||S.mode==="local";
+const isMine=r=>!r.sample&&!!r.driverUid&&r.driverUid===S.uid;
+
+function person(r){return{name:isMine(r)?"You":(r.driverName||"Saathi member")};}
+function avatarHTML(p){return'<span class="av" aria-hidden="true">'+esc(initials(p.name))+"</span>";}
+function milestone(to,km){return'<span class="ms" role="img" aria-label="'+km+' km to '+esc(to)+'"><i></i><span>'+esc(shortName(to))+"</span><b>"+km+"</b></span>";}
+
+/* ---------- identity: a random key per browser; the server keeps only its hash ---------- */
+function randHex(n){const a=new Uint8Array(n);crypto.getRandomValues(a);return Array.from(a).map(x=>x.toString(16).padStart(2,"0")).join("");}
+async function hashKey(k){try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(k));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("").slice(0,24);}catch(_){return"local-"+k.slice(0,18);}}
+async function initIdentity(){
+  let k=store.get("saathi.key");
+  if(!k||!/^[A-Za-z0-9-]{20,80}$/.test(k)){k=randHex(24);store.set("saathi.key",k);}
+  S.key=k;S.uid=await hashKey(k);S.name=store.get("saathi.name")||"";
+}
+function rememberName(n){S.name=n;store.set("saathi.name",n);}
+
+/* ---------- data: shared API, or this browser's storage when the API has no store ---------- */
+const LKEY="saathi.local";
+function loadLocal(){let d={};try{d=JSON.parse(store.get(LKEY)||"{}");}catch(_){}S.rides=(d.rides||[]).map(normRide);S.bookings=(d.bookings||[]).map(normBooking);}
+function saveLocal(){const rides=S.rides.map(r=>{const o=Object.assign({},r);delete o.km;delete o.sample;return o;});
+  if(!store.set(LKEY,JSON.stringify({rides,bookings:S.bookings})))throw new Error("This browser blocked saving. Allow site data for this site and try again.");}
+async function api(method,path,body){
+  let r;
+  try{r=await fetch(path,{method,headers:{"Content-Type":"application/json","x-saathi-key":S.key},body:body?JSON.stringify(body):undefined,cache:"no-store"});}
+  catch(_){throw new Error("Couldn't reach Saathi. Check your connection and try again.");}
+  let data={};try{data=await r.json();}catch(_){}
+  if(!r.ok)throw new Error(data.message||"Couldn't save just now. Try again in a moment.");
+  return data;
+}
+async function fetchState(){
+  const r=await fetch("/api/state",{headers:{"x-saathi-key":S.key},cache:"no-store"});
+  if(r.status===503||r.status===404)return"local";
+  if(!r.ok)throw new Error("bad status");
+  const d=await r.json();
+  S.rides=(d.rides||[]).map(normRide);S.bookings=(d.bookings||[]).map(normBooking);
+  return"live";
+}
+async function load(){
+  if(S.mode==="local"){loadLocal();return;}
+  for(let attempt=0;attempt<2;attempt++){
+    try{const m=await fetchState();S.mode=m;S.err=false;if(m==="local")loadLocal();return;}
+    catch(_){if(attempt===0)await new Promise(r=>setTimeout(r,1500));}
+  }
+  if(S.mode==="loading"){S.mode="local";loadLocal();}else S.err=true;
+}
+async function createRide(o){
+  const body={from:o.from,to:o.to,date:o.date,time:o.time,vehicle:o.vehicle,vehicleName:o.vehicleName,seats:o.seats,
+    price:o.price==null?o.suggested:o.price,womenOnly:o.womenOnly,helmet:o.helmet,note:o.note,driverName:o.name};
+  if(S.mode==="live"){await api("POST","/api/rides",body);await load();return;}
+  S.rides.push(normRide(Object.assign({id:randHex(9),driverUid:S.uid,status:"open",createdAt:Date.now()},body)));saveLocal();
+}
+async function cancelRide(r){
+  if(S.mode==="live"){await api("PATCH","/api/rides?id="+encodeURIComponent(r.id));await load();return;}
+  r.status="cancelled";saveLocal();
+}
+async function createBooking(r,n,name){
+  if(S.mode==="live"){await api("POST","/api/bookings",{rideId:r.id,seats:n,name});await load();return;}
+  if(seatsLeft(r)<n)throw new Error("Not enough seats left on this ride.");
+  S.bookings.push(normBooking({id:randHex(9),rideId:r.id,uid:S.uid,name,seats:n,createdAt:Date.now()}));saveLocal();
+}
+async function cancelBooking(r){
+  const mine=myBookings(r.id);
+  if(S.mode==="live"){for(const b of mine)await api("DELETE","/api/bookings?id="+encodeURIComponent(b.id));await load();return;}
+  S.bookings=S.bookings.filter(b=>!mine.includes(b));saveLocal();
+}
+
+/* ---------- ride card ---------- */
+function cardHTML(r,opt){opt=opt||{};
+  const dur=durMin(r.km,r.vehicle),arr=dur!=null?addTime(r.time,dur):null,left=seatsLeft(r),p=opt.you?{name:"You"}:person(r);
+  const pills=[];
+  if(r.sample)pills.push('<span class="pill sample">Sample</span>');
+  if(r.status==="cancelled")pills.push('<span class="pill warn">Cancelled</span>');
+  else if(left<=0)pills.push('<span class="pill">Full</span>');
+  else if(left===1&&r.seats>1)pills.push('<span class="pill warn">1 seat left</span>');
+  if(r.womenOnly)pills.push('<span class="pill">Women only</span>');
+  if(r.helmet&&r.vehicle==="bike")pills.push('<span class="pill">Helmet provided</span>');
+  const seatsTxt=r.vehicle==="bike"?(left>0?"Pillion seat free":"Pillion seat taken"):(left+" of "+r.seats+" seats free");
+  const tag=opt.static?"div":"button";
+  return"<"+tag+(opt.static?"":' type="button" data-ride="'+esc(r.id)+'"')+' class="ride'+((r.status==="cancelled"||isPast(r))&&!opt.static?" dim":"")+'">'
+   +'<span class="legs">'
+     +'<span class="t">'+esc(r.time)+'</span><span class="dot"></span><span class="p">'+esc(r.from||"—")+"</span>"
+     +'<span class="dur">'+(dur!=null?"≈"+fmtDur(dur):"")+'</span><span class="bar"></span><span></span>'
+     +'<span class="t">'+(arr?esc(arr.t)+(arr.plus?"<sup>+1</sup>":""):"—")+'</span><span class="dot end"></span><span class="p">'+esc(r.to||"—")+"</span>"
+   +"</span>"
+   +'<span class="price"><span class="amt">'+inr(r.price)+'</span><span class="per">'+(r.vehicle==="bike"?"for the ride":"per seat")+"</span></span>"
+   +'<span class="meta">'
+     +'<span class="who">'+avatarHTML(p)+"<span>"+esc(p.name)+"</span></span>"
+     +'<span class="tag">'+(r.vehicle==="bike"?ICON.bike:ICON.car)+"<span>"+esc(r.vehicleName||(r.vehicle==="bike"?"Bike":"Car"))+"</span></span>"
+     +'<span class="tag">'+seatsTxt+"</span>"
+     +pills.join("")
+     +(opt.status?'<span class="status">'+opt.status+"</span>":"")
+     +(r.km!=null?milestone(r.to,r.km):"")
+   +"</span></"+tag+">";
+}
+function groupedHTML(rides){
+  let html="",cur=null,open=false;
+  rides.forEach(r=>{if(r.date!==cur){if(open)html+="</div>";cur=r.date;html+='<div class="day">'+esc(dayLabel(r.date))+'</div><div class="list">';open=true;}html+=cardHTML(r);});
+  if(open)html+="</div>";return html;
+}
+
+/* ---------- find ---------- */
+function matches(r,q,ignoreDate){
+  if(q.from&&!key(r.from).includes(key(q.from)))return false;
+  if(q.to&&!key(r.to).includes(key(q.to)))return false;
+  if(!ignoreDate&&q.date&&r.date!==q.date)return false;
+  if(q.vehicle!=="any"&&r.vehicle!==q.vehicle)return false;
+  if(seatsLeft(r)<q.seats)return false;
+  return true;
+}
+function sorter(a,b){if(S.sort==="price"&&a.price!==b.price)return a.price-b.price;return(a.date+a.time).localeCompare(b.date+b.time);}
+function renderFind(){
+  const q=S.q,active=!!(q.from||q.to||q.date||q.vehicle!=="any"||q.seats>1);
+  $("#r-title").textContent=(q.from||q.to)?((q.from||"Anywhere")+" to "+(q.to||"anywhere")):"Upcoming rides";
+  $("#r-clear").hidden=!active;
+  const real=S.rides.filter(r=>r.status==="open"&&!isPast(r)&&matches(r,q,false)).sort(sorter);
+  let html="";
+  if(real.length)html=groupedHTML(real);
+  else if(S.mode==="loading")html='<p class="loading">Loading rides…</p>';
+  else{
+    const offer=(q.from||q.to)?'<button type="button" class="btn primary" data-act="offer-this">Offer this ride</button>':'<a class="btn primary" href="#offer">Offer a ride</a>';
+    html='<div class="empty"><b>'+(active?"No rides match yet":"No rides offered yet")+"</b><span>"+(active?"Nobody has offered a ride like this. If you're driving it, post it and others can book.":"Be the first to post a ride. People going the same way can book a seat.")+"</span>"+offer+"</div>";
+  }
+  $("#r-list").innerHTML=html;
+  let samples=[];
+  if(SHOW_SAMPLES&&real.length<3){samples=SAMPLES.filter(r=>matches(r,q,true)).sort(sorter);if(!samples.length&&!active)samples=SAMPLES.slice().sort(sorter);}
+  $("#r-samples").innerHTML=samples.length?'<div class="group-note"><h3>Sample rides</h3><p>These show how listings look. They can’t be booked.</p></div>'+groupedHTML(samples):"";
+}
+
+/* ---------- offer ---------- */
+const OF={seats:3};
+function offerVeh(){return $("#o-bike").checked?"bike":"car";}
+function readOffer(){
+  const vehicle=offerVeh(),from=$("#o-from").value.trim(),to=$("#o-to").value.trim(),km=distKm(from,to);
+  const raw=$("#o-price").value.trim();
+  return{name:$("#o-name").value.trim(),from,to,date:$("#o-date").value,time:$("#o-time").value,vehicle,seats:vehicle==="bike"?1:OF.seats,
+    price:raw===""?null:Number(raw),suggested:suggest(km,vehicle),km,vehicleName:$("#o-vname").value.trim(),
+    womenOnly:$("#o-women").checked,helmet:vehicle==="bike"&&$("#o-helmet").checked,note:$("#o-note").value.trim()};
+}
+function updateOffer(){
+  const o=readOffer(),bike=o.vehicle==="bike";
+  $("#o-helmet-row").hidden=!bike;
+  $("#o-seats").value=o.seats;$("#o-seats").textContent=o.seats;
+  $("#o-minus").disabled=bike||OF.seats<=1;$("#o-plus").disabled=bike||OF.seats>=6;
+  $("#o-seats-l").textContent=bike?"Seats to offer (bikes carry one)":"Seats to offer";
+  $("#o-price").placeholder=o.suggested?String(o.suggested):"0";
+  $("#o-vname").placeholder=bike?"Honda Activa 6G":"White Swift Dzire";
+  $("#o-price").previousElementSibling.textContent=bike?"Price for the ride (₹)":"Price per seat (₹)";
+  const dur=durMin(o.km,o.vehicle);
+  $("#o-route").innerHTML=o.km!=null?"About <b>"+o.km+" km</b>, roughly <b>"+fmtDur(dur)+"</b> by "+(bike?"bike":"car")+".":(o.from&&o.to?"We don't have a distance for this route. Set your own price.":"Pick places from the list to get a distance and price estimate.");
+  const sg=$("#o-suggest");
+  if(o.suggested){sg.hidden=false;sg.innerHTML="<span>Suggested <b>"+inr(o.suggested)+"</b> "+(bike?"for the ride":"per seat")+" covers a fair share of fuel"+(bike?"":" and tolls")+".</span>"+(o.price!==o.suggested?'<button type="button" class="btn ghost" data-act="use-price">Use '+inr(o.suggested)+"</button>":"");}
+  else sg.hidden=true;
+  $("#o-count").textContent=$("#o-note").value.length+" / 200";
+  const draft={id:"draft",from:o.from||"Leaving from",to:o.to||"Going to",date:o.date,time:o.time||"08:00",vehicle:o.vehicle,vehicleName:o.vehicleName,seats:o.seats,
+    price:o.price!=null&&!isNaN(o.price)?o.price:(o.suggested||0),womenOnly:o.womenOnly,helmet:o.helmet,note:o.note,status:"open",km:o.km,sample:false};
+  $("#o-preview").innerHTML=(o.date?'<div class="day" style="margin-top:0">'+esc(dayLabel(o.date))+"</div>":"")+cardHTML(draft,{static:true,you:true});
+}
+function validateOffer(o){
+  if(!o.name)return"Add your name so passengers know who's driving.";
+  if(!o.from||!o.to)return"Add where you're leaving from and where you're going.";
+  if(key(o.from)===key(o.to))return"Leaving from and going to need to be different places.";
+  if(!o.date)return"Pick the date you're travelling.";
+  if(o.date<dayStr(0))return"That date has passed. Pick today or a later date.";
+  if(!/^\d{2}:\d{2}$/.test(o.time))return"Add the time you're leaving.";
+  if(o.date===dayStr(0)&&o.time<=nowHM())return"That time has passed today. Pick a later time.";
+  const price=o.price==null?o.suggested:o.price;
+  if(price==null||isNaN(price))return"Set a price per seat. Enter 0 to offer it free.";
+  if(price<0||price>10000||Math.round(price)!==price)return"Price needs to be a whole number of rupees between 0 and 10,000.";
+  return null;
+}
+function showErr(el,msg){el.textContent=msg||"";el.hidden=!msg;}
+async function publishRide(e){
+  e.preventDefault();
+  const err=$("#o-err"),o=readOffer(),bad=validateOffer(o);
+  if(bad)return showErr(err,bad);
+  if(!ready())return showErr(err,"Still loading the ride board. Try again in a moment.");
+  showErr(err,"");const btn=$("#o-submit");btn.disabled=true;btn.textContent="Publishing…";
+  try{
+    await createRide(o);
+    rememberName(o.name);
+    toast("Ride published");
+    $("#o-note").value="";$("#o-price").value="";
+    location.hash="trips";
+    renderAll();
+  }catch(x){showErr(err,x.message);}
+  finally{btn.disabled=false;btn.textContent="Publish ride";updateOffer();}
+}
+
+/* ---------- trips ---------- */
+function renderTrips(){
+  const el=$("#trips-body");
+  if(!ready()){el.innerHTML='<p class="loading">Loading your trips…</p>';return;}
+  const order=(a,b)=>{const pa=isPast(a),pb=isPast(b);if(pa!==pb)return pa?1:-1;return pa?(b.date+b.time).localeCompare(a.date+a.time):(a.date+a.time).localeCompare(b.date+b.time);};
+  const mine=S.bookings.filter(b=>b.uid===S.uid);
+  const riding=[...new Set(mine.map(b=>b.rideId))].map(id=>S.rides.find(r=>r.id===id)).filter(Boolean).sort(order);
+  const driving=S.rides.filter(isMine).sort(order);
+  let html="<h2>You’re riding</h2>";
+  html+=riding.length?'<div class="list trips">'+riding.map(r=>{const n=mine.filter(b=>b.rideId===r.id).reduce((a,b)=>a+b.seats,0);
+    return cardHTML(r,{status:r.status==="cancelled"?"Driver cancelled":(isPast(r)?"Completed":(n===1?"1 seat booked":n+" seats booked")+" · "+inr(n*r.price))});}).join("")+"</div>"
+    :'<div class="empty"><span>You haven’t booked a seat yet.</span><a class="btn ghost" href="#find">Find a ride</a></div>';
+  html+="<h2>You’re driving</h2>";
+  html+=driving.length?'<div class="list trips">'+driving.map(r=>{const n=bookedSeats(r);
+    return cardHTML(r,{status:r.status==="cancelled"?"You cancelled":(n?n+" booked · "+inr(n*r.price)+" from passengers":"No bookings yet")});}).join("")+"</div>"
+    :'<div class="empty"><span>You’re not offering any rides.</span><a class="btn ghost" href="#offer">Offer a ride</a></div>';
+  el.innerHTML=html;
+}
+
+/* ---------- ride sheet ---------- */
+function sheetHTML(r){
+  const dur=durMin(r.km,r.vehicle),arr=dur!=null?addTime(r.time,dur):null,left=seatsLeft(r),p=person(r);
+  const mine=myBookings(r.id),myN=mine.reduce((a,b)=>a+b.seats,0),isDriver=isMine(r),bike=r.vehicle==="bike";
+  let h='<div class="sh-head"><div><div class="eyebrow">'+esc(dayLabel(r.date))+'</div><h2 id="sh-title">'+esc(r.from)+" to "+esc(r.to)+'</h2></div><button type="button" class="x" data-close aria-label="Close">'+ICON.x+"</button></div>";
+  h+='<div class="legs big"><span class="t">'+esc(r.time)+'</span><span class="dot"></span><span class="p">'+esc(r.from)+'</span><span class="dur">'+(dur?"≈"+fmtDur(dur):"")+'</span><span class="bar"></span><span></span><span class="t">'+(arr?esc(arr.t)+(arr.plus?"<sup>+1</sup>":""):"—")+'</span><span class="dot end"></span><span class="p">'+esc(r.to)+"</span></div>";
+  if(r.km!=null)h+='<div class="facts">'+milestone(r.to,r.km)+"<div><b>About "+r.km+" km</b><span>Roughly "+fmtDur(dur)+" by "+(bike?"bike":"car")+". Arrival time is an estimate.</span></div></div>";
+  h+='<div class="drv">'+avatarHTML(p)+'<div class="who-t"><b>'+esc(p.name)+'</b><span class="tag">'+(bike?ICON.bike:ICON.car)+"<span>"+esc(r.vehicleName||(bike?"Bike":"Car"))+'</span></span></div><div class="price"><span class="amt">'+inr(r.price)+'</span><span class="per">'+(bike?"for the ride":"per seat")+"</span></div></div>";
+  const pills=[];
+  if(r.sample)pills.push('<span class="pill sample">Sample</span>');
+  pills.push('<span class="pill">'+(bike?(left?"Pillion seat free":"Pillion seat taken"):left+" of "+r.seats+" seats free")+"</span>");
+  if(r.womenOnly)pills.push('<span class="pill">Women only</span>');
+  if(r.helmet&&bike)pills.push('<span class="pill">Helmet provided</span>');
+  h+='<div class="pills">'+pills.join("")+"</div>";
+  if(r.note)h+='<p class="note">'+esc(r.note)+"</p>";
+  if(isDriver){const bs=bookingsFor(r.id);
+    h+='<div class="pax"><div class="eyebrow">Passengers</div>'+(bs.length?bs.map(b=>{const nm=b.name||"Passenger";return'<div class="pax-row">'+avatarHTML({name:nm})+"<span>"+esc(nm)+'</span><span class="s">'+(b.seats===1?"1 seat":b.seats+" seats")+"</span></div>";}).join(""):'<p class="hint">No one has booked yet.</p>')+"</div>";}
+  let f="";
+  if(r.sample)f='<p class="hint">This is a sample listing that shows how rides look. Rides people post appear above the samples and can be booked.</p><button class="btn primary wide" disabled>Book a seat</button>';
+  else if(r.status==="cancelled")f='<p class="hint">'+(isDriver?"You cancelled this ride.":"The driver cancelled this ride.")+"</p>";
+  else if(isDriver){
+    if(isPast(r))f='<p class="hint">This ride has left.</p>';
+    else if(S.confirm==="ride")f='<p class="hint"><b>Cancel this ride?</b> Passengers will see it as cancelled.</p><div class="row"><button class="btn ghost" data-act="confirm-no">Keep ride</button><button class="btn danger solid" data-act="cancel-ride"'+(S.busy?" disabled":"")+">Cancel ride</button></div>";
+    else f='<button class="btn danger wide" data-act="ask-cancel-ride">Cancel this ride</button>';
+  }
+  else if(myN){
+    f='<div class="booked">'+ICON.tick+"<span>You’re booked · "+(myN===1?"1 seat":myN+" seats")+" · "+inr(myN*r.price)+" to pay the driver</span></div>";
+    if(!isPast(r))f+=S.confirm==="booking"?'<div class="row"><button class="btn ghost" data-act="confirm-no">Keep booking</button><button class="btn danger solid" data-act="cancel-booking"'+(S.busy?" disabled":"")+">Cancel booking</button></div>":'<button class="btn ghost wide" data-act="ask-cancel-booking">Cancel booking</button>';
+  }
+  else if(isPast(r))f='<p class="hint">This ride has already left.</p>';
+  else if(left<=0)f='<p class="hint">Every seat on this ride is booked.</p><button class="btn primary wide" disabled>Full</button>';
+  else if(!ready())f='<p class="hint">Loading the ride board…</p><button class="btn primary wide" disabled>Book a seat</button>';
+  else{
+    const n=Math.min(Math.max(1,S.bookN),left);S.bookN=n;
+    if(r.womenOnly)f+='<p class="hint">The driver has asked for women passengers only.</p>';
+    if(!S.name)f+='<label class="f"><span>Your name</span><input id="bk-name" maxlength="40" autocomplete="given-name" placeholder="So the driver knows who’s coming"></label>';
+    if(!bike&&left>1)f+='<div class="row" style="justify-content:space-between"><span class="eyebrow" id="bk-l">Seats</span><div class="stepper" role="group" aria-labelledby="bk-l" style="flex:none"><button type="button" data-act="n-minus" aria-label="One seat fewer"'+(n<=1?" disabled":"")+'>−</button><output>'+n+'</output><button type="button" data-act="n-plus" aria-label="One seat more"'+(n>=left?" disabled":"")+">+</button></div></div>";
+    f+='<p class="err" id="bk-err" role="alert" hidden></p>';
+    f+='<button class="btn primary wide" data-act="book"'+(S.busy?" disabled":"")+">"+(S.busy?"Booking…":"Book "+(n===1?"1 seat":n+" seats")+" · "+inr(n*r.price))+"</button><p class=\"hint\">You pay the driver directly on the day.</p>";
+  }
+  return h+'<div class="foot">'+f+"</div>";
+}
+function openRide(id,opener){S.openId=id;S.opener=opener||null;S.bookN=1;S.confirm=null;S.busy=false;renderSheet();$("#sheet").hidden=false;document.documentElement.style.overflow="hidden";$("#sheet-card").focus();}
+function closeSheet(){if($("#sheet").hidden)return;$("#sheet").hidden=true;S.openId=null;document.documentElement.style.overflow="";if(S.opener&&document.contains(S.opener))S.opener.focus();}
+function renderSheet(){if(!S.openId)return;const r=rideById(S.openId);if(!r){closeSheet();return;}const card=$("#sheet-card"),st=card.scrollTop;
+  const typed=$("#bk-name")?$("#bk-name").value:"";card.innerHTML=sheetHTML(r);if($("#bk-name"))$("#bk-name").value=typed;card.scrollTop=st;}
+
+async function act(a){
+  const r=S.openId?rideById(S.openId):null;
+  if(a==="n-minus"){S.bookN--;renderSheet();return;}
+  if(a==="n-plus"){S.bookN++;renderSheet();return;}
+  if(a==="confirm-no"){S.confirm=null;renderSheet();return;}
+  if(a==="ask-cancel-ride"){S.confirm="ride";renderSheet();return;}
+  if(a==="ask-cancel-booking"){S.confirm="booking";renderSheet();return;}
+  if(a==="use-price"){const o=readOffer();if(o.suggested!=null){$("#o-price").value=o.suggested;updateOffer();}return;}
+  if(a==="offer-this"){$("#o-from").value=S.q.from;$("#o-to").value=S.q.to;if(S.q.date)$("#o-date").value=S.q.date;if(S.q.vehicle==="bike")$("#o-bike").checked=true;else if(S.q.vehicle==="car")$("#o-car").checked=true;updateOffer();location.hash="offer";return;}
+  if(!r||r.sample||!ready()||S.busy)return;
+  let name=S.name;
+  if(a==="book"&&!name){
+    name=($("#bk-name")&&$("#bk-name").value.trim())||"";
+    if(!name){showErr($("#bk-err"),"Add your name so the driver knows who's coming.");return;}
+  }
+  S.busy=true;renderSheet();
+  try{
+    if(a==="book"){
+      const n=Math.min(S.bookN,seatsLeft(r));
+      if(n<1||myBookings(r.id).length){S.busy=false;renderSheet();return;}
+      await createBooking(r,n,name);rememberName(name);
+      toast(n===1?"Seat booked":n+" seats booked");
+    }else if(a==="cancel-booking"){await cancelBooking(r);toast("Booking cancelled");}
+    else if(a==="cancel-ride"){await cancelRide(r);toast("Ride cancelled");}
+    S.confirm=null;
+  }catch(x){toast(x.message);}
+  S.busy=false;renderAll();
+}
+
+/* ---------- notice, views, render ---------- */
+function renderNotice(){
+  let m="";
+  if(S.mode==="local")m="Rides are saved on this device only for now, so other people can’t see them yet.";
+  else if(S.err)m="Can’t reach the ride board right now. Showing the rides already loaded.";
+  const n=$("#notice");n.textContent=m;n.hidden=!m;
+}
+function showView(){
+  let v=(location.hash||"").replace("#","");if(!["find","offer","trips"].includes(v))v="find";S.view=v;
+  ["find","offer","trips"].forEach(x=>{$("#v-"+x).hidden=x!==v;});
+  document.querySelectorAll(".tabs a").forEach(a=>{if(a.dataset.view===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});
+  closeSheet();
+}
+function renderAll(){renderNotice();renderFind();renderTrips();updateOffer();renderSheet();}
+let tt;function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),3200);}
+
+/* ---------- wiring ---------- */
+$("#places").innerHTML=PLACES.map(p=>'<option value="'+esc(p[0])+'">').join("");
+const POP=[["Delhi","Jaipur"],["Noida","Agra"],["Gurugram","Chandigarh"],["Noida Sector 62","Connaught Place"],["Bengaluru","Mysuru"],["Mumbai","Pune"]];
+$("#popular").insertAdjacentHTML("beforeend",POP.map(p=>'<button type="button" class="chip" data-from="'+esc(p[0])+'" data-to="'+esc(p[1])+'">'+esc(p[0])+" → "+esc(p[1])+"</button>").join(""));
+function readSearch(){S.q={from:$("#s-from").value.trim(),to:$("#s-to").value.trim(),date:$("#s-date").value,seats:Number($("#s-seats").value)||1,vehicle:(document.querySelector('input[name="s-veh"]:checked')||{}).value||"any"};}
+$("#search").addEventListener("submit",e=>{e.preventDefault();readSearch();renderFind();$("#r-title").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});});
+document.querySelectorAll('input[name="s-veh"]').forEach(i=>i.addEventListener("change",()=>{readSearch();renderFind();}));
+$("#s-swap").addEventListener("click",()=>{const a=$("#s-from").value;$("#s-from").value=$("#s-to").value;$("#s-to").value=a;});
+$("#popular").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;$("#s-from").value=b.dataset.from;$("#s-to").value=b.dataset.to;$("#s-date").value="";readSearch();renderFind();});
+$("#r-clear").addEventListener("click",()=>{$("#search").reset();readSearch();renderFind();});
+$("#r-sort").addEventListener("change",e=>{S.sort=e.target.value;renderFind();});
+$("#offer").addEventListener("input",()=>{showErr($("#o-err"),"");updateOffer();});
+$("#offer").addEventListener("change",updateOffer);
+$("#offer").addEventListener("submit",publishRide);
+$("#o-minus").addEventListener("click",()=>{OF.seats=Math.max(1,OF.seats-1);updateOffer();});
+$("#o-plus").addEventListener("click",()=>{OF.seats=Math.min(6,OF.seats+1);updateOffer();});
+$("#o-date").value=dayStr(1);$("#o-date").min=dayStr(0);$("#s-date").min=dayStr(0);
+document.addEventListener("click",e=>{
+  const c=e.target.closest("[data-close]");if(c){closeSheet();return;}
+  const a=e.target.closest("[data-act]");if(a){e.preventDefault();act(a.dataset.act);return;}
+  const r=e.target.closest("button[data-ride]");if(r)openRide(r.dataset.ride,r);
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();});
+window.addEventListener("hashchange",()=>{showView();if(S.mode==="live"&&!S.busy)load().then(renderAll);});
+showView();readSearch();renderAll();
+
+(async function start(){
+  await initIdentity();
+  if(S.name)$("#o-name").value=S.name;
+  await load();renderAll();
+  const refresh=async()=>{if(S.mode==="live"&&!document.hidden&&!S.busy){await load();renderAll();}};
+  setInterval(refresh,20000);
+  document.addEventListener("visibilitychange",refresh);
+})();
+})();
+</script>
+
+</body>
+</html>
