@@ -384,6 +384,58 @@ details.card form{display:grid;gap:14px}
 .about{margin:0;font-size:15px;color:var(--muted)}
 .about b{color:var(--ink)}
 
+/* live location */
+.pulse{display:inline-block;width:10px;height:10px;border-radius:50%;background:#22c26b;box-shadow:0 0 0 0 rgba(34,194,107,.55);animation:pulse 1.6s ease-out infinite;flex:none;margin-right:8px;vertical-align:1px}
+.pulse.off{background:var(--muted);animation:none}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(34,194,107,0)}100%{box-shadow:0 0 0 0 rgba(34,194,107,0)}}
+.btn .pulse{background:#fff;margin-right:2px}
+.tg.live{background:#dcf5e7;color:#0a6b3f}
+.tg.live .pulse{width:8px;height:8px;margin-right:0}
+.livebar{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap;background:var(--ink);color:var(--bg);border-radius:16px;padding:11px 12px 11px 16px;margin:0 0 16px;box-shadow:var(--sh-2)}
+.livebar .grow{flex:1;min-width:180px}
+.livebar b{display:block;font-family:var(--f-display);font-size:15.5px;padding-top:2px}
+.livebar small{display:block;opacity:.78;font-size:13px}
+.livebar .btn{min-height:38px}
+.livebar .btn.ghost{background:transparent;color:var(--bg);border-color:color-mix(in srgb,var(--bg) 40%,transparent)}
+.share.live{border-color:#22c26b;background:color-mix(in srgb,#22c26b 7%,var(--surface))}
+.alert{gap:12px;margin-top:20px}
+.alert .list{gap:10px}
+.trk-head{display:flex;align-items:center;gap:14px;margin-top:4px}
+.trk-head .x{text-decoration:none;color:var(--ink);flex:none}
+.trk-head .h2{font-weight:800;font-size:clamp(24px,3.4vw,32px);letter-spacing:-.02em;line-height:1.1}
+.trk{display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-areas:"map status" "map info";grid-template-rows:auto 1fr;gap:14px 20px;margin-top:18px;align-items:start}
+.trk-status{grid-area:status}.trk-map{grid-area:map}.trk-side{grid-area:info}
+.trk-status .state{box-shadow:var(--sh-1)}
+.trk-map{height:min(70vh,620px);border-radius:20px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--sh-1);background:var(--surface-2);z-index:0}
+.trk-side .row{display:flex;gap:8px}.trk-side .row .btn{flex:1}
+.trk-st{align-items:center}
+.trk-st b{font-size:19px}
+.tl{list-style:none;margin:0;padding:0 0 0 4px;display:grid;gap:0}
+.tl li{position:relative;display:grid;grid-template-columns:52px 1fr;gap:10px;padding:0 0 14px 22px;font-size:15px}
+.tl li:last-child{padding-bottom:0}
+.tl li::before{content:"";position:absolute;left:0;top:5px;width:12px;height:12px;border-radius:50%;border:3px solid var(--brand);background:var(--surface)}
+.tl li.to::before{background:var(--brand)}
+.tl li.from::after{content:"";position:absolute;left:5px;top:20px;bottom:2px;width:3px;background:repeating-linear-gradient(180deg,var(--brand) 0 4px,transparent 4px 7px)}
+.tl b{font:600 15px var(--f-mono)}
+.mk{background:none;border:0}
+.mk.pin{border-radius:50%;border:4px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.mk.pin.from{background:#0b7a4b}
+.mk.pin.to{background:#0f1a14}
+.mk.drv .core{position:absolute;inset:5px;border-radius:50%;background:#0b7a4b;color:#fff;display:grid;place-items:center;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.mk.drv .core svg{width:19px;height:19px}
+.mk.drv .ring{position:absolute;inset:0;border-radius:50%;background:rgba(11,122,75,.28);animation:ring 1.8s ease-out infinite}
+@keyframes ring{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.6);opacity:0}}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .trk-map .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.88)}}
+:root[data-theme="dark"] .trk-map .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.88)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tg.live{background:rgba(34,194,107,.16);color:#5fe0a0}}
+@media (max-width:880px){.trk{grid-template-columns:minmax(0,1fr);grid-template-areas:"status" "map" "info";grid-template-rows:auto;gap:12px;margin-top:14px}.trk-map{height:46vh;min-height:280px}}
+
+/* footer */
+.credit{margin:44px 0 0;text-align:center;display:grid;gap:4px}
+.credit p{margin:0;font-size:14px;color:var(--muted)}
+.credit b{color:var(--ink);font-family:var(--f-display)}
+.credit .osm{margin:0;font-size:12px}
+
 /* short tab labels on narrow screens */
 .l-short{display:none}
 @media (max-width:960px){.l-long{display:none}.l-short{display:inline}}
@@ -517,6 +569,7 @@ label.linkbtn{display:inline-block}
 </header>
 
 <main class="wrap">
+  <div id="livebar" class="livebar" role="status" hidden></div>
   <p id="notice" class="notice" hidden></p>
 
   <section id="v-find" class="view">
@@ -625,6 +678,10 @@ label.linkbtn{display:inline-block}
     <div id="trips-body"></div>
   </section>
 
+  <section id="v-track" class="view" hidden>
+    <div id="track-body"></div>
+  </section>
+
   <section id="v-chats" class="view" hidden>
     <div id="chats-body"></div>
   </section>
@@ -633,7 +690,7 @@ label.linkbtn{display:inline-block}
     <div id="profile-body"></div>
   </section>
 
-  <p class="osm">Place search and road distances use <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> data via Photon and OSRM. Your location is only looked up when you tap the location button.</p>
+  <footer class="credit"><p>Made and developed by <b>Vipin</b></p><p class="osm">Maps &amp; places © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></p></footer>
 </main>
 
 <div id="sheet" class="sheet" hidden>
@@ -914,6 +971,7 @@ function cardHTML(r,opt){opt=opt||{};
   if(r.womenOnly)tags.push('<span class="tg rose">'+ICON.women+"Women only</span>");
   if(r.helmet&&bike)tags.push('<span class="tg sky">'+ICON.helmet+"Helmet</span>");
   if(r.hasQr||opt.qr)tags.push('<span class="tg">'+ICON.qr+"UPI</span>");
+  if(r.live&&r.status==="open"&&!opt.static)tags.push('<span class="tg live"><span class="pulse"></span>Live</span>');
   const away=opt.static?null:awayKm(r);if(away!=null)tags.push('<span class="tg sky">'+ICON.near+(away<1?"Under 1 km away":Math.round(away)+" km away")+"</span>");
   const tag=opt.static?"div":"button";
   return"<"+tag+(opt.static?"":' type="button" data-ride="'+esc(r.id)+'"')+' class="ride'+((r.status==="cancelled"||isPast(r))&&!opt.static?" dim":"")+'">'
@@ -1082,6 +1140,8 @@ function renderTrips(){
   }
   const order=(a,b)=>{const pa=isPast(a),pb=isPast(b);if(pa!==pb)return pa?1:-1;return pa?(b.date+b.time).localeCompare(a.date+a.time):(a.date+a.time).localeCompare(b.date+b.time);};
   let html="";
+  S.bookings.filter(b=>b.mine&&isActive(b)).forEach(b=>{const r=rideById(b.rideId);
+    if(r&&r.status==="cancelled"&&!isPast(r))html+='<div class="card alert">'+cancelledHTML(r,b,true)+"</div>";});
   const wait=waiting().sort((a,b)=>{const x=rideById(a.rideId),y=rideById(b.rideId);return(x.date+x.time).localeCompare(y.date+y.time)||a.createdAt-b.createdAt;});
   if(wait.length)html+='<h2>Requests waiting for you</h2><p class="hint">Confirm a request to share numbers'+(S.features.email?" and email the rider":"")+'. Nothing is booked until you do.</p><div class="card reqs" style="margin-top:12px">'+wait.map(b=>reqHTML(b,rideById(b.rideId),true)).join("")+"</div>";
   const riding=[...new Set(S.bookings.filter(b=>b.mine).map(b=>b.rideId))].map(rideById).filter(r=>r&&myBooking(r.id)).sort(order);
@@ -1130,11 +1190,16 @@ function sheetHTML(r){
   }
   let f="";
   const past=isPast(r);
-  if(r.status==="cancelled")f='<p class="hint">'+(isDriver?"You cancelled this ride.":"The driver cancelled this ride.")+"</p>";
+  if(r.status==="cancelled"){
+    const b=!isDriver&&S.user?myBooking(r.id):null;
+    if(b&&isActive(b))f=cancelledHTML(r,b);
+    else f='<p class="hint">'+(isDriver?"You cancelled this ride.":"The driver cancelled this ride.")+"</p>";
+  }
   else if(isDriver){
-    if(past)f='<p class="hint">This ride has left.</p>';
-    else if(S.confirm==="ride")f='<p class="hint"><b>Cancel this ride?</b> Everyone who asked for a seat will see it as cancelled'+(S.features.email?" and get an email":"")+'.</p><div class="row"><button type="button" class="btn ghost" data-act="confirm-no">Keep ride</button><button type="button" class="btn danger solid" data-act="cancel-ride"'+(S.busy?" disabled":"")+">Cancel ride</button></div>";
-    else f='<button type="button" class="btn danger wide" data-act="ask-cancel-ride">Cancel this ride</button>';
+    f=liveCardHTML(r);
+    if(past)f+='<p class="hint">This ride has left.</p>';
+    else if(S.confirm==="ride")f+='<p class="hint"><b>Cancel this ride?</b> Everyone who asked for a seat will see it as cancelled'+(S.features.email?" and get an email":"")+'.</p><div class="row"><button type="button" class="btn ghost" data-act="confirm-no">Keep ride</button><button type="button" class="btn danger solid" data-act="cancel-ride"'+(S.busy?" disabled":"")+">Cancel ride</button></div>";
+    else f+='<button type="button" class="btn danger wide" data-act="ask-cancel-ride">Cancel this ride</button>';
   }else{
     const b=S.user?myBooking(r.id):null;
     const cancelBtn=lbl=>S.confirm==="booking"?'<div class="row"><button type="button" class="btn ghost" data-act="confirm-no">Keep it</button><button type="button" class="btn danger solid" data-act="cancel-booking"'+(S.busy?" disabled":"")+">"+lbl+"</button></div>":'<button type="button" class="btn ghost wide" data-act="ask-cancel-booking">'+lbl+"</button>";
@@ -1143,6 +1208,8 @@ function sheetHTML(r){
       if(!past)f+=cancelBtn("Cancel request");
     }else if(b&&b.status==="confirmed"){
       f=stateHTML("ok",ICON.tick,"Your seat is confirmed",plural(b.seats,"seat","seats")+" · "+inr(b.seats*r.price)+" to pay "+esc(dn)+" on the day.");
+      if(shareWindow(r))f+='<a class="btn primary wide" href="#track='+esc(r.id)+'">'+(r.live?'<span class="pulse"></span>Track '+esc(dn)+" live":ICON.pin+"Live location")+"</a>"
+        +(r.live?"":'<p class="hint">You can follow '+esc(dn)+" on a map once they start sharing their location"+(S.features.email?". We’ll email you when they do.":".")+"</p>");
       if(b.driverPhone&&!past){
         const text="Hi "+dn+", this is "+S.user.name+" from Saathi. My "+plural(b.seats,"seat","seats")+" on your ride from "+tripLine(r)+" "+(b.seats===1?"is":"are")+" confirmed. Where should I meet you?";
         f+='<div class="row"><a class="btn wa" href="'+esc(waUrl(b.driverPhone,text))+'" target="_blank" rel="noopener" aria-label="WhatsApp '+esc(dn)+'">'+ICON.chat+'WhatsApp</a><a class="btn ghost" href="'+esc(telUrl(b.driverPhone))+'">'+ICON.phone+'Call</a></div><p class="hint">'+esc(dn)+"’s number: <b>"+esc(fmtPhone(b.driverPhone))+"</b></p>";
@@ -1336,6 +1403,9 @@ async function act(a,el){
   if(a==="auth-login"||a==="auth-signup"||a==="auth-forgot"){S.authMode=a.slice(5);if(a==="auth-forgot")S.authMsg="";renderProfile(true);const i=$("#profile-body form input");if(i)i.focus();return;}
   if(a==="login"){needLogin({hash:S.view==="profile"?"find":S.view==="chats"&&S.chatId?"chat="+S.chatId:S.view},"");return;}
   if(a==="play"){toggleAudio(id);return;}
+  if(a==="share-start"){startSharing(id||(r&&r.id));return;}
+  if(a==="share-stop"){stopSharing();toast("Stopped sharing your location");return;}
+  if(a==="search-route"){const x=rideById(id);if(x){setPlace($("#s-from"),x.from,x.fromPt);setPlace($("#s-to"),x.to,x.toPt);$("#s-date").value="";readSearch();go("find");renderFind();setTimeout(()=>$("#r-title").scrollIntoView({block:"start"}),60);}return;}
   if(a==="chat-back"){location.hash="chats";return;}
   if(a==="chat-ride"){go("find",id);return;}
   if(a==="qr-remove"){const had=OF.qr&&OF.qr.id;OF.qr=null;renderQrPick();updateOffer();
@@ -1351,7 +1421,7 @@ async function act(a,el){
   }
   if(a==="logout"){
     try{await api("POST","/api/auth",{action:"logout"});}catch(x){toast(x.message,5000);return;}
-    S.user=null;S.bookings=[];S.convs=[];S.chat={id:null,msgs:[],loaded:false,err:""};OF.qr=undefined;S.rides.forEach(x=>{x.mine=false;});S.authMode="login";S.authMsg="";clearCache();
+    stopSharing(true);S.user=null;S.bookings=[];S.convs=[];S.chat={id:null,msgs:[],loaded:false,err:""};OF.qr=undefined;S.rides.forEach(x=>{x.mine=false;});S.authMode="login";S.authMsg="";clearCache();
     renderAll();toast("You’re logged out");load().then(renderAll);return;
   }
   if(!ready()||S.busy)return;
@@ -1375,6 +1445,192 @@ async function act(a,el){
     toast(x.message,5000);
   }
   S.busy=false;renderAll();
+}
+
+/* ---------- when a driver cancels: other rides on the same route with room ---------- */
+const dayDiff=(a,b)=>Math.round((new Date(a+"T00:00:00")-new Date(b+"T00:00:00"))/86400000);
+const startMs=r=>new Date(r.date+"T"+r.time).getTime();
+function samePlaceC(a,b,end){const pa=a[end+"Pt"],pb=b[end+"Pt"];if(pa&&pb)return gcKm(pa,pb)<=NEAR_KM;return head(a[end])===head(b[end]);}
+function altRides(r,seats){
+  const u=S.user;
+  return S.rides.filter(x=>x.id!==r.id&&x.status==="open"&&!x.mine&&!isPast(x)&&seatsLeft(x)>=seats&&Math.abs(dayDiff(x.date,r.date))<=1
+      &&(!x.womenOnly||(u&&u.gender==="female"))&&!(u&&myBooking(x.id)&&isActive(myBooking(x.id)))
+      &&samePlaceC(x,r,"from")&&samePlaceC(x,r,"to"))
+    .sort((a,b)=>Math.abs(startMs(a)-startMs(r))-Math.abs(startMs(b)-startMs(r))).slice(0,3);
+}
+function cancelledHTML(r,b,inTrips){
+  const alts=altRides(r,b.seats),dn=first(r.driverName),route=esc(r.from.split(",")[0])+" → "+esc(r.to.split(",")[0]);
+  const title=inTrips?esc(dn)+" cancelled "+route+", "+esc(shortDate(r.date)):esc(dn)+" cancelled this ride";
+  const text="Nothing is owed. "+(alts.length?(alts.length===1?"This ride on the same route still has room:":"These rides on the same route still have room:"):"No other ride on this route has free seats right now.");
+  return stateHTML("no",ICON.x,title,text)+(alts.length?'<div class="list">'+alts.map(x=>cardHTML(x)).join("")+"</div>":"")
+    +'<button type="button" class="btn ghost'+(inTrips?"":" wide")+'" data-act="search-route" data-id="'+esc(r.id)+'">'+ICON.road+"Search this route</button>";
+}
+
+/* ---------- live location: the driver shares, confirmed riders follow on a map ---------- */
+const agoS=s=>s<5?"just now":s<60?s+" s ago":Math.round(s/60)+" min ago";
+const fmtKm=km=>km<1?Math.max(10,Math.round(km*100)*10)+" m":(km<10?km.toFixed(1):Math.round(km))+" km";
+const clockIn=min=>{const d=new Date(Date.now()+min*60000);return pad(d.getHours())+":"+pad(d.getMinutes());};
+/* Sharing is offered from 6 hours before departure until 3 hours after the expected arrival */
+function shareWindow(r){if(!r||r.status!=="open"||!r.date)return false;const s=startMs(r),now=Date.now();return now>=s-6*3600000&&now<=s+((r.dur||240)+180)*60000;}
+const TRK={rideId:null,watch:null,last:null,lastSent:0,sentPt:null,wake:null,err:"",sending:false};
+function liveCardHTML(r){
+  if(r.status!=="open")return"";
+  if(!shareWindow(r))return startMs(r)>Date.now()?'<p class="hint">On the day of the ride you can share your live location, so confirmed riders can see where you are.</p>':"";
+  if(TRK.rideId===r.id){const sent=TRK.lastSent?"Location sent "+agoS(Math.round((Date.now()-TRK.lastSent)/1000)):"Finding your location…";
+    return'<div class="share live"><div><b><span class="pulse"></span>Sharing your live location</b><span>'+esc(TRK.err||sent)+". Keep Saathi open on screen while you drive.</span></div>"
+      +'<div class="row"><a class="btn ghost sm" href="#track='+esc(r.id)+'">'+ICON.pin+'See map</a><button type="button" class="btn danger solid sm" data-act="share-stop">Stop sharing</button></div></div>';}
+  return'<div class="share"><div><b>Share live location</b><span>Riders with a confirmed seat can follow you on a map and see how far away you are, like a delivery app.</span></div>'
+    +'<button type="button" class="btn primary sm" data-act="share-start" data-id="'+esc(r.id)+'">'+ICON.locate+"Start sharing</button></div>";
+}
+async function keepAwake(){try{if(navigator.wakeLock&&TRK.rideId&&!TRK.wake&&!document.hidden){TRK.wake=await navigator.wakeLock.request("screen");TRK.wake.addEventListener("release",()=>{TRK.wake=null;});}}catch(_){}}
+function startSharing(id){
+  const r=rideById(id);if(!r||!r.mine)return;
+  if(!navigator.geolocation)return toast("This browser can’t share your location.",5000);
+  if(!ready())return toast("Connect to the internet to share your location.");
+  if(TRK.rideId&&TRK.rideId!==id)stopSharing();
+  if(TRK.watch!=null)navigator.geolocation.clearWatch(TRK.watch);
+  Object.assign(TRK,{rideId:id,err:"",last:null,lastSent:0,sentPt:null});
+  TRK.watch=navigator.geolocation.watchPosition(onPos,e=>{
+    TRK.err=e.code===1?"Location is blocked. Allow it for this site in your browser settings":"Can’t get your location right now";
+    renderLiveBar();renderSheet();if(e.code===1)stopSharing(true);
+  },{enableHighAccuracy:true,maximumAge:5000,timeout:30000});
+  keepAwake();store.set("saathi.sharing",id);renderLiveBar();renderSheet();
+  toast("Sharing your live location. Keep Saathi open while you drive.",5000);
+}
+function onPos(p){
+  TRK.last={pt:[p.coords.latitude,p.coords.longitude],acc:p.coords.accuracy,heading:p.coords.heading,speed:p.coords.speed};
+  if(TRK.err&&!/blocked/.test(TRK.err))TRK.err="";
+  const now=Date.now(),moved=TRK.sentPt?gcKm(TRK.sentPt,TRK.last.pt)*1000:1e9;
+  if(now-TRK.lastSent>=12000||(moved>=30&&now-TRK.lastSent>=4000))sendPos();
+}
+async function sendPos(){
+  if(!TRK.last||!TRK.rideId||TRK.sending||!ready())return;
+  TRK.sending=true;const l=TRK.last,id=TRK.rideId;
+  try{await api("POST","/api/track",{rideId:id,lat:l.pt[0],lon:l.pt[1],acc:l.acc,heading:l.heading,speed:l.speed});TRK.lastSent=Date.now();TRK.sentPt=l.pt;TRK.err="";}
+  catch(x){TRK.err=x.message.replace(/\.$/,"");if(["cancelled","not_yours","not_today","signed_out"].includes(x.code))stopSharing(true);}
+  finally{TRK.sending=false;renderLiveBar();if($("#sheet-card")&&S.openId===id)renderSheet();if(S.view==="track"&&TV.id===id)pollTrack();}
+}
+function stopSharing(silent){
+  const id=TRK.rideId;if(TRK.watch!=null)navigator.geolocation.clearWatch(TRK.watch);
+  Object.assign(TRK,{watch:null,rideId:null,last:null,sentPt:null,lastSent:0});
+  if(TRK.wake){TRK.wake.release().catch(()=>{});TRK.wake=null;}
+  try{localStorage.removeItem("saathi.sharing");}catch(_){}
+  if(id&&!silent&&ready())api("DELETE","/api/track?ride="+encodeURIComponent(id)).catch(()=>{});
+  renderLiveBar();renderSheet();if(S.view==="track")pollTrack();
+}
+function renderLiveBar(){
+  const el=$("#livebar");if(!el)return;let html="";
+  if(TRK.rideId){const r=rideById(TRK.rideId),sent=TRK.lastSent?"Sent "+agoS(Math.round((Date.now()-TRK.lastSent)/1000)):"Finding your location…";
+    html='<span class="pulse"></span><div class="grow"><b>Sharing live location'+(r?" · "+esc(r.from.split(",")[0])+" → "+esc(r.to.split(",")[0]):"")+"</b><small>"+esc(TRK.err||sent)+". Keep Saathi open while you drive.</small></div>"
+      +'<a class="btn sm ghost" href="#track='+esc(TRK.rideId)+'">Map</a><button type="button" class="btn sm danger solid" data-act="share-stop">Stop</button>';}
+  else if(S.user){const id=store.get("saathi.sharing"),r=id&&rideById(id);
+    if(r&&r.mine&&shareWindow(r))html='<span class="pulse off"></span><div class="grow"><b>Live location paused</b><small>Saathi was closed. Resume so your riders can keep following you.</small></div><button type="button" class="btn sm primary" data-act="share-start" data-id="'+esc(r.id)+'">Resume</button>';}
+  if(el.dataset.k!==html){el.dataset.k=html;el.innerHTML=html;}el.hidden=!html;
+}
+
+/* the tracking page: a map with the driver, the pickup and the destination */
+const TV={id:null,map:null,mk:{},timer:null,data:null,at:0,eta:null,etaAt:0,etaPh:"",busy:false,err:"",fitted:false,key:""};
+let leafletP=null;
+function loadLeaflet(){
+  if(window.L&&window.L.map)return Promise.resolve(window.L);if(leafletP)return leafletP;
+  leafletP=new Promise((res,rej)=>{
+    const css=document.createElement("link");css.rel="stylesheet";css.href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";css.integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=";css.crossOrigin="";document.head.append(css);
+    const s=document.createElement("script");s.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";s.integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";s.crossOrigin="";
+    s.onload=()=>res(window.L);s.onerror=()=>{leafletP=null;rej(new Error("Couldn’t load the map. Check your connection."));};document.head.append(s);
+  });
+  return leafletP;
+}
+function trackRide(){return rideById(TV.id);}
+function openTrackView(){
+  if(TV.id!==S.trackId){if(TV.map){TV.map.remove();TV.map=null;}Object.assign(TV,{id:S.trackId,mk:{},data:null,at:0,eta:null,etaAt:0,etaPh:"",err:"",fitted:false,key:""});}
+  renderTrackView();
+  clearInterval(TV.timer);TV.timer=setInterval(()=>{if(!document.hidden)pollTrack();else renderTrackInfo();},5000);
+  pollTrack();
+}
+function closeTrackView(){clearInterval(TV.timer);TV.timer=null;}
+function renderTrackView(){
+  const el=$("#track-body");if(!el||!TV.id)return;
+  const r=trackRide(),k=S.user?(r?"ride":"none"):"out";
+  if(TV.key!==k){TV.key=k;if(TV.map){TV.map.remove();TV.map=null;TV.mk={};TV.fitted=false;}
+    if(!S.user)el.innerHTML='<div class="empty"><b>Log in to see live location</b><span>Live tracking is for riders with a confirmed seat.</span><button type="button" class="btn primary" data-act="login">Log in</button></div>';
+    else if(!r)el.innerHTML='<p class="loading">'+(S.mode==="loading"?"Loading…":"This ride isn’t available.")+"</p>";
+    else{el.innerHTML='<div class="trk-head"><a class="x" href="#trips" aria-label="Back to my trips">'+ICON.back+'</a><div><div class="eyebrow">Live location</div><h1 class="h2">'+esc(r.from.split(",")[0])+" to "+esc(r.to.split(",")[0])+'</h1></div></div>'
+      +'<div class="trk"><div class="trk-status" id="trk-status" aria-live="polite"></div><div class="trk-map" id="trk-map" role="img" aria-label="Map with the driver, the pickup point and the destination"></div><div class="trk-side" id="trk-info"></div></div>';
+      loadLeaflet().then(()=>{initMap();}).catch(x=>{const m=$("#trk-map");if(m)m.innerHTML='<p class="hint" style="padding:18px">'+esc(x.message)+"</p>";});}
+  }
+  renderTrackInfo();
+}
+function divIcon(cls,html,size){return window.L.divIcon({className:"mk "+cls,html:html||"",iconSize:[size,size],iconAnchor:[size/2,size/2]});}
+function initMap(){
+  const el=$("#trk-map"),Lf=window.L;if(!el||TV.map||!Lf)return;
+  TV.map=Lf.map(el,{zoomControl:true}).setView([22.6,79],5);
+  Lf.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(TV.map);
+  drawTrack();
+}
+function drawTrack(){
+  const Lf=window.L,map=TV.map,r=trackRide();if(!map||!r)return;
+  const put=(k,pt,icon,title)=>{if(!pt){if(TV.mk[k]){TV.mk[k].remove();delete TV.mk[k];}return;}
+    if(TV.mk[k])TV.mk[k].setLatLng(pt);else TV.mk[k]=Lf.marker(pt,{icon,title,keyboard:false}).addTo(map);};
+  put("from",r.fromPt,divIcon("pin from","",22),"Pickup: "+r.from);
+  put("to",r.toPt,divIcon("pin to","",22),"Destination: "+r.to);
+  const d=TV.data,drv=d&&d.sharing&&d.loc?[d.loc.lat,d.loc.lon]:null;
+  put("drv",drv,divIcon("drv",'<span class="ring"></span><span class="core">'+(r.vehicle==="bike"?ICON.bike:ICON.car)+"</span>",46),r.driverName);
+  if(drv&&TV.mk.drv)TV.mk.drv.setZIndexOffset(1000);
+  const pts=[drv,r.fromPt].filter(Boolean);if(!drv&&r.toPt)pts.push(r.toPt);
+  if(!TV.fitted&&pts.length){if(pts.length===1)map.setView(pts[0],14);else map.fitBounds(pts,{padding:[50,50],maxZoom:15});TV.fitted=true;}
+  else if(drv&&!map.getBounds().pad(-.1).contains(drv))map.panTo(drv);
+}
+async function pollTrack(){
+  const id=TV.id;if(!id||!S.user||!ready()||TV.busy){renderTrackInfo();return;}TV.busy=true;
+  try{const d=await api("GET","/api/track?ride="+encodeURIComponent(id));if(TV.id!==id)return;
+    const was=TV.data&&TV.data.sharing;TV.data=d;TV.at=Date.now();TV.err="";if(d.sharing&&!was)TV.fitted=false;updateEta();}
+  catch(x){if(TV.id===id)TV.err=x.code==="not_found"?"Live location is only for the driver and riders with a confirmed seat.":x.message;}
+  finally{TV.busy=false;drawTrack();renderTrackInfo();}
+}
+function phase(r,me){
+  const dP=r.fromPt?gcKm(me,r.fromPt):null,dD=r.toPt?gcKm(me,r.toPt):null,total=r.fromPt&&r.toPt?gcKm(r.fromPt,r.toPt):null;
+  if(dD!=null&&dD<0.5)return"arrived";
+  if(dP!=null&&dP<0.35)return"pickup";
+  if(Date.now()>=startMs(r)-5*60000&&dD!=null&&total!=null&&dD<total-0.5&&(dP==null||dP>0.8))return"trip";
+  return"coming";
+}
+function estimate(r,me,ph){const t=ph==="trip"?r.toPt:r.fromPt;if(!t)return null;const km=gcKm(me,t)*1.3;return{ph,km,min:Math.max(1,Math.round(km/(r.vehicle==="bike"?28:35)*60))};}
+async function updateEta(){
+  const r=trackRide(),d=TV.data;if(!r||!d||!d.sharing||!d.loc)return;
+  const me=[d.loc.lat,d.loc.lon],ph=phase(r,me),t=ph==="trip"?r.toPt:r.fromPt;
+  if(!t||ph==="pickup"||ph==="arrived"||(ph===TV.etaPh&&Date.now()-TV.etaAt<30000))return;
+  TV.etaAt=Date.now();TV.etaPh=ph;
+  try{const j=await (await fetch(GEO.osrm+"/route/v1/driving/"+me[1]+","+me[0]+";"+t[1]+","+t[0]+"?overview=false")).json();
+    const rt=j&&j.routes&&j.routes[0];if(rt&&TV.etaPh===ph)TV.eta={ph,km:rt.distance/1000,min:Math.max(1,Math.round(rt.duration/60*1.15))};renderTrackInfo();}catch(_){}
+}
+function renderTrackInfo(){
+  const el=$("#trk-info"),r=trackRide();if(!el||!r)return;
+  const d=TV.data,dn=first(r.driverName),own=r.mine,b=own?null:myBooking(r.id);
+  let title,sub="",cls="wait",live=false;
+  if(r.status==="cancelled"||(d&&d.status==="cancelled")){title="This ride was cancelled";cls="no";}
+  else if(TV.err&&!d){title="Can’t show live location";sub=TV.err;cls="no";}
+  else if(!d){title="Loading live location…";}
+  else if(!d.sharing){title=own?"You’re not sharing your location":dn+" hasn’t started sharing yet";
+    sub=own?"Start sharing so your riders can follow you.":"You’ll see "+dn+" on the map as soon as they start"+(S.features.email?". We’ll email you too.":".");}
+  else{live=true;const me=[d.loc.lat,d.loc.lon],ph=phase(r,me),e=TV.eta&&TV.eta.ph===ph?TV.eta:estimate(r,me,ph);
+    const age=Math.round((d.loc.age+(Date.now()-TV.at))/1000),who=own?"You’re":dn+" is";cls="ok";
+    if(ph==="arrived")title="Arrived in "+r.to.split(",")[0];
+    else if(ph==="pickup")title=who+" at the pickup point";
+    else if(ph==="trip")title="On the way to "+r.to.split(",")[0];
+    else title=e?who+" "+fmtKm(e.km)+" away":who+" on the way";
+    const eta=!e||ph==="arrived"||ph==="pickup"?"":ph==="trip"?fmtKm(e.km)+" to go · arrives about "+clockIn(e.min):"About "+e.min+" min to "+r.from.split(",")[0];
+    sub=[eta,"Updated "+agoS(age)].filter(Boolean).join(" · ");
+    if(age>120){cls="wait";sub+=". "+(own?"Your":dn+"’s")+" phone may have lost signal or closed Saathi.";}}
+  const arr=r.dur!=null?addTime(r.time,r.dur):null;
+  const st='<div class="state '+cls+' trk-st">'+(live?'<span class="pulse"></span>':cls==="no"?ICON.x:ICON.clock)+"<div><b>"+esc(title)+"</b>"+(sub?"<span>"+esc(sub)+"</span>":"")+"</div></div>";
+  const se=$("#trk-status");if(se&&se.dataset.k!==st){se.dataset.k=st;se.innerHTML=st;}
+  let h='<div class="card"><ol class="tl"><li class="from"><b>'+esc(r.time)+"</b><span>"+esc(r.from)+'</span></li><li class="to"><b>'+(arr?esc(arr.t):"—")+"</b><span>"+esc(r.to)+"</span></li></ol>";
+  if(own){h+=TRK.rideId===r.id?'<button type="button" class="btn danger wide" data-act="share-stop">Stop sharing</button>':(shareWindow(r)?'<button type="button" class="btn primary wide" data-act="share-start" data-id="'+esc(r.id)+'">'+ICON.locate+"Start sharing my location</button>":"");}
+  else{h+='<div class="drv">'+avatarHTML(person(r))+'<div class="who-t"><b>'+esc(r.driverName)+"</b><span>"+(r.vehicle==="bike"?ICON.bike:ICON.car)+esc(r.vehicleName||(r.vehicle==="bike"?"Bike":"Car"))+"</span></div></div>";
+    if(b&&b.driverPhone)h+='<div class="row"><a class="btn wa" href="'+esc(waUrl(b.driverPhone,"Hi "+dn+", this is "+(S.user?S.user.name:"")+" from Saathi. I'm following your live location."))+'" target="_blank" rel="noopener">'+ICON.chat+'WhatsApp</a><a class="btn ghost" href="'+esc(telUrl(b.driverPhone))+'">'+ICON.phone+"Call</a></div>";
+    h+='<p class="hint">The map updates every few seconds while '+esc(dn)+" has Saathi open. Only you and the other confirmed riders can see it.</p>";}
+  h+="</div>";
+  if(el.dataset.k!==h){el.dataset.k=h;el.innerHTML=h;}
 }
 
 /* ---------- messages: one chat per ride and passenger, with text and voice ---------- */
@@ -1568,23 +1824,28 @@ function renderNotice(){
   else if(S.err)m="Can’t reach the ride board right now. Showing the rides already loaded.";
   const n=$("#notice");n.textContent=m;n.hidden=!m;
 }
-const VIEWS=["find","offer","trips","chats","profile"];
+const VIEWS=["find","offer","trips","chats","profile","track"];
 function showView(){
   let h=(location.hash||"").replace(/^#/,""),chat=null;
   if(h.startsWith("reset=")){S.resetToken=h.slice(6);S.authMode="reset";S.authMsg="";h="profile";}
   if(h.startsWith("chat=")){chat=h.slice(5,145);h="chats";}
+  if(h.startsWith("ride=")){S.pendingOpen=h.slice(5,69);h="find";history.replaceState(null,"","#find");}
+  let track=null;if(h.startsWith("track=")){track=h.slice(6,70);h="track";}
   const v=VIEWS.includes(h)?h:"find",changed=v!==S.view||chat!==S.chatId;
   if(REC.rec&&(v!=="chats"||chat!==S.chatId))stopRec(false);
   if(!AUD.paused&&(v!=="chats"||chat!==S.chatId))AUD.pause();
-  S.view=v;S.chatId=v==="chats"?chat:null;
+  const trackChanged=track!==S.trackId;
+  S.view=v;S.chatId=v==="chats"?chat:null;S.trackId=v==="track"?track:null;
   VIEWS.forEach(x=>{$("#v-"+x).hidden=x!==v;});
-  document.querySelectorAll(".tabs a").forEach(a=>{if(a.dataset.view===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});
+  const tab=v==="track"?"trips":v;
+  document.querySelectorAll(".tabs a").forEach(a=>{if(a.dataset.view===tab)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});
   closeSheet();
   if(v==="profile")renderProfile(true);
-  if(changed)window.scrollTo(0,0);
+  if(changed||trackChanged)window.scrollTo(0,0);
+  if(v==="track")openTrackView();else closeTrackView();
   if(v==="chats"){renderChats();renderAccount();if(S.chatId&&S.chat.loaded)renderMsgs(true);}
 }
-function renderAll(){renderNotice();renderAccount();renderFind();renderTrips();updateOffer();renderProfile();renderChats();renderSheet();}
+function renderAll(){renderNotice();renderLiveBar();renderAccount();renderFind();renderTrips();updateOffer();renderProfile();renderChats();if(S.view==="track"){renderTrackView();drawTrack();}renderSheet();}
 let tt;function toast(msg,ms){const t=$("#toast");t.textContent=msg;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),ms||3200);}
 
 /* ---------- wiring ---------- */
@@ -1638,6 +1899,9 @@ loadCache();showView();readSearch();renderAll();
 
 (async function start(){
   await load();renderAll();
+  {const id=S.pendingOpen;S.pendingOpen=null;if(id&&rideById(id))openRide(id);}
+  setInterval(()=>{if(TRK.rideId&&TRK.last&&Date.now()-TRK.lastSent>=15000)sendPos();renderLiveBar();},5000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)keepAwake();});
   const refresh=async()=>{if(S.mode==="live"&&!document.hidden&&!S.busy){await load();renderAll();}};
   setInterval(refresh,20000);
   setInterval(()=>{if(S.view==="chats"&&S.chatId&&!document.hidden)fetchThread(false);},4000);

@@ -3,7 +3,7 @@
 Share car and bike rides. Find a seat going your way and ask the driver for it, or offer your own free seat. Installable as an app (PWA), and it opens offline.
 
 - `index.html` is the whole site.
-- `api/` has six small serverless functions: `auth` (accounts), `state`, `rides`, `bookings`, `messages` (chat) and `media` (photos, payment QR codes, voice messages). Data is stored in Postgres (Supabase, Neon) or Upstash Redis.
+- `api/` has seven small serverless functions: `auth` (accounts), `state`, `rides`, `bookings`, `messages` (chat), `media` (photos, payment QR codes, voice messages) and `track` (live location). Data is stored in Postgres (Supabase, Neon) or Upstash Redis.
 - `manifest.webmanifest`, `sw.js` and `icons/` make it installable and let it open offline.
 - No build step. The dependencies are `pg` (Postgres) and `nodemailer` (email over SMTP).
 
@@ -30,6 +30,18 @@ A free Supabase project pauses after a week without activity. Open its dashboard
 - **Profile photo:** upload one from the profile page. It's cropped square and shrunk in the browser (about 30 KB), and it shows on ride cards, requests and chats.
 - **Payment QR:** drivers can add their UPI QR code (from GPay, PhonePe or Paytm) when they offer a ride. It's remembered for next time. Only passengers whose seat is confirmed can see it, and they can save it to pay from their UPI app.
 - **Alternative number:** in their profile, passengers can add a family member's or friend's number. Once a seat is confirmed, one tap sends that number the route, time, driver's name and number, and the vehicle, by WhatsApp or SMS from the passenger's phone. The confirmation email includes the same WhatsApp link. Sending it with no tap at all would need a paid SMS or WhatsApp Business service.
+
+## When a driver cancels
+
+Everyone who asked for a seat sees the ride as cancelled. At the top of **My trips** and on the ride itself, Saathi suggests up to 3 other rides on the same route that still have enough free seats. A ride counts as the same route when its pickup and drop are within 25 km of the cancelled ride's, on the same day or a day either side. Women-only rides are suggested only to women. If email is set up, the same suggestions arrive by email, each with a link that opens that ride.
+
+## Live location
+
+- On the day of the ride (from 6 hours before departure), the driver taps **Share live location** on their ride. Riders with a confirmed seat can then open **Live location** and follow the driver on a map, like a delivery app. They see how far away the driver is and about how long until pickup, then "at the pickup point", then the time left to the destination.
+- Riders get an email when the driver starts sharing, if email is set up.
+- Only the latest position is stored, never a route history. It's visible only to the driver and confirmed riders, and it disappears when the driver taps **Stop** or cancels the ride.
+- Browsers pause location in background tabs, so the driver needs to keep Saathi open on screen while driving. The app keeps the screen awake while sharing, and shows a **Resume** button if Saathi was closed.
+- The map uses Leaflet with OpenStreetMap tiles, and the travel times come from OSRM. Both are free community services for light use. If Saathi gets busy, switch to a hosted tile and routing plan.
 
 ## Messages
 
