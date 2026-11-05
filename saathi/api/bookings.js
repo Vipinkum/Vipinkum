@@ -24,15 +24,15 @@ module.exports = async (req, res) => {
       const left = ride.seats - forRide.reduce((a, x) => a + (x.seats || 0), 0);
       if (seats > left) return L.fail(res, 409, "full", left > 0 ? "Only " + left + (left === 1 ? " seat is" : " seats are") + " left on this ride." : "Every seat on this ride is booked.");
       const doc = { id: L.newId(), rideId, uid, name, seats, createdAt: Date.now() };
-      await L.redis([["HSET", L.BOOKINGS, doc.id, JSON.stringify(doc)]]);
+      await L.put(L.BOOKINGS, doc.id, doc);
       return L.send(res, 201, { booking: doc });
     }
     if (req.method === "DELETE") {
-      const id = String((req.query && req.query.id) || new URL(req.url, "http://x").searchParams.get("id") || "");
-      const [raw] = await L.redis([["HGET", L.BOOKINGS, id]]);
-      if (!raw) return L.send(res, 200, { ok: true });
-      if (JSON.parse(raw).uid !== uid) return L.fail(res, 403, "not_yours", "You can only cancel your own booking.");
-      await L.redis([["HDEL", L.BOOKINGS, id]]);
+      const id = L.queryId(req);
+      const booking = await L.get(L.BOOKINGS, id);
+      if (!booking) return L.send(res, 200, { ok: true });
+      if (booking.uid !== uid) return L.fail(res, 403, "not_yours", "You can only cancel your own booking.");
+      await L.del(L.BOOKINGS, id);
       return L.send(res, 200, { ok: true });
     }
     return L.fail(res, 405, "method", "Use POST or DELETE.");

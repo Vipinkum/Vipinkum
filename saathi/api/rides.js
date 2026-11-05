@@ -18,6 +18,14 @@ function validate(b) {
     note: L.text(b.note, 200),
     driverName: L.str(b.driverName, 40),
   };
+  // Optional map data from the free OpenStreetMap lookups in the page.
+  const coord = (v, max) => { const n = Number(v); return v !== null && v !== "" && Number.isFinite(n) && Math.abs(n) <= max ? Math.round(n * 1e5) / 1e5 : null; };
+  const fLat = coord(b.fromLat, 90), fLon = coord(b.fromLon, 180), tLat = coord(b.toLat, 90), tLon = coord(b.toLon, 180);
+  if (fLat !== null && fLon !== null) { ride.fromLat = fLat; ride.fromLon = fLon; }
+  if (tLat !== null && tLon !== null) { ride.toLat = tLat; ride.toLon = tLon; }
+  const rk = L.int(b.roadKm), rm = L.int(b.roadMin);
+  if (rk >= 1 && rk <= 5000) ride.roadKm = rk;
+  if (rm >= 1 && rm <= 6000) ride.roadMin = rm;
   if (!ride.driverName) return [null, "Add your name so passengers know who's driving."];
   if (!ride.from || !ride.to) return [null, "Add where you're leaving from and where you're going."];
   if (ride.from.toLowerCase() === ride.to.toLowerCase()) return [null, "Leaving from and going to need to be different places."];
@@ -35,20 +43,18 @@ module.exports = async (req, res) => {
     if (req.method === "POST") {
       const [ride, err] = validate(await L.readBody(req));
       if (err) return L.fail(res, 400, "invalid", err);
-      const [count] = await L.redis([["HLEN", L.RIDES]]);
-      if (count >= L.MAX_RIDES) return L.fail(res, 507, "full", "The ride board is full. Old rides need to be cleared before new ones can be added.");
+      if ((await L.count(L.RIDES)) >= L.MAX_RIDES) return L.fail(res, 507, "full", "The ride board is full. Old rides need to be cleared before new ones can be added.");
       const doc = Object.assign({ id: L.newId(), driverUid: uid, status: "open", createdAt: Date.now() }, ride);
-      await L.redis([["HSET", L.RIDES, doc.id, JSON.stringify(doc)]]);
+      await L.put(L.RIDES, doc.id, doc);
       return L.send(res, 201, { ride: doc });
     }
     if (req.method === "PATCH") {
-      const id = String((req.query && req.query.id) || new URL(req.url, "http://x").searchParams.get("id") || "");
-      const [raw] = await L.redis([["HGET", L.RIDES, id]]);
-      if (!raw) return L.fail(res, 404, "not_found", "That ride no longer exists.");
-      const ride = JSON.parse(raw);
+      const id = L.queryId(req);
+      const ride = await L.get(L.RIDES, id);
+      if (!ride) return L.fail(res, 404, "not_found", "That ride no longer exists.");
       if (ride.driverUid !== uid) return L.fail(res, 403, "not_yours", "Only the driver can cancel this ride.");
       ride.status = "cancelled";
-      await L.redis([["HSET", L.RIDES, id, JSON.stringify(ride)]]);
+      await L.put(L.RIDES, id, ride);
       return L.send(res, 200, { ride });
     }
     return L.fail(res, 405, "method", "Use POST or PATCH.");
