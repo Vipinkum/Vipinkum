@@ -2,5 +2,8 @@
   "name": "saathi",
   "private": true,
   "description": "Share car and bike rides",
-  "engines": { "node": ">=18" }
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "pg": "8.11.3"
+  }
 }
