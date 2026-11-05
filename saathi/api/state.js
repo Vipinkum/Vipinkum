@@ -1,19 +1,78 @@
-// GET /api/state: every ride and booking. Passenger names are only sent
-// to that passenger and to the ride's driver.
+// GET /api/state: the signed-in user, every ride, and the bookings that user may see.
+// Everyone sees how many seats are confirmed on a ride. Names are only shared between a
+// passenger and that ride's driver, and phone numbers only once the driver confirms.
 const L = require("./_lib");
+
+const ACTIVE = ["pending", "confirmed"];
+const statusOf = (b) => b.status || "pending";
 
 module.exports = async (req, res) => {
   if (req.method !== "GET") return L.fail(res, 405, "method", "Use GET.");
-  if (!L.hasStore()) return L.fail(res, 503, "no_store", "Shared storage isn't connected yet.");
-  const me = L.uidFrom(req);
+  if (!L.hasStore()) return L.fail(res, 503, "no_store", "Saathi isn't connected to its database yet.");
   try {
-    const { rides, bookings } = await L.loadAll();
-    const driverOf = new Map(rides.map((r) => [r.id, r.driverUid]));
-    const safeBookings = bookings.map((b) => {
-      const canSeeName = me && (b.uid === me || driverOf.get(b.rideId) === me);
-      return { id: b.id, rideId: b.rideId, uid: b.uid, seats: b.seats, createdAt: b.createdAt, name: canSeeName ? b.name : "" };
+    const { rides, bookings, users } = await L.loadAll();
+    const userById = new Map(users.map((u) => [u.id, u]));
+    const sessionUser = await L.currentUser(req);
+    const me = sessionUser ? sessionUser.id : null;
+    const since = L.utcDay(-45);
+
+    const rideById = new Map(rides.map((r) => [r.id, r]));
+    const ridesOffered = new Map();
+    for (const r of rides) if (r.status === "open") ridesOffered.set(r.driverUid, (ridesOffered.get(r.driverUid) || 0) + 1);
+
+    const seatsBy = new Map(); // rideId -> {taken, requested}
+    for (const b of bookings) {
+      const s = statusOf(b);
+      if (!ACTIVE.includes(s)) continue;
+      const c = seatsBy.get(b.rideId) || { taken: 0, requested: 0 };
+      if (s === "confirmed") c.taken += b.seats || 0; else c.requested += b.seats || 0;
+      seatsBy.set(b.rideId, c);
+    }
+
+    const outRides = rides.filter((r) => r.date >= since).map((r) => {
+      const d = userById.get(r.driverUid);
+      const c = seatsBy.get(r.id) || { taken: 0, requested: 0 };
+      const out = Object.assign({}, r, {
+        driverName: d ? d.name : r.driverName || "Driver",
+        driverBio: d ? d.bio || "" : "",
+        driverSince: d ? d.createdAt : null,
+        driverRides: ridesOffered.get(r.driverUid) || 0,
+        taken: c.taken,
+        mine: !!me && r.driverUid === me,
+      });
+      if (out.mine) out.requested = c.requested;
+      delete out.driverUid;
+      return out;
     });
-    L.send(res, 200, { rides, bookings: safeBookings });
+
+    const outBookings = [];
+    if (me) {
+      for (const b of bookings) {
+        const ride = rideById.get(b.rideId);
+        if (!ride) continue;
+        const asPassenger = b.uid === me;
+        const asDriver = ride.driverUid === me;
+        if (!asPassenger && !asDriver) continue;
+        const status = statusOf(b);
+        const passenger = userById.get(b.uid);
+        const o = {
+          id: b.id, rideId: b.rideId, seats: b.seats, status, createdAt: b.createdAt, decidedAt: b.decidedAt || null,
+          message: b.message || "", mine: asPassenger,
+          name: passenger ? passenger.name : b.name || "Passenger",
+        };
+        if (asDriver && passenger) {
+          o.gender = passenger.gender || "";
+          if (status === "confirmed") o.phone = passenger.phone || "";
+        }
+        if (asPassenger && status === "confirmed") {
+          const d = userById.get(ride.driverUid);
+          o.driverPhone = d ? d.phone || "" : "";
+        }
+        outBookings.push(o);
+      }
+    }
+
+    L.send(res, 200, { me: L.publicUser(sessionUser), features: { email: L.mailOn() }, rides: outRides, bookings: outBookings });
   } catch (e) {
     L.fail(res, 502, "store_unreachable", "The ride board can't be reached right now.");
   }
