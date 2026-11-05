@@ -46,7 +46,7 @@ Everyone who asked for a seat sees the ride as cancelled. At the top of **My tri
 ## Messages
 
 - A passenger can message the driver of any ride, before or after asking for a seat. A driver can message anyone who asked for a seat on their ride. Each ride plus passenger is its own chat.
-- Text and voice messages. Tap the mic, speak (up to a minute), then tap send. Voice is recorded in the browser at about 32 kbps, so a minute is about 240 KB.
+- Text and voice messages, and photos and PDFs (paperclip button, up to 2 MB). Tap the mic, speak (up to a minute), then tap send. Voice is recorded in the browser at about 32 kbps, so a minute is about 240 KB.
 - New messages show up within a few seconds while a chat is open, and the **Messages** tab shows an unread count. If email is set up, the other person gets one email for a new message, unless they have the chat open.
 - Only the two people in a chat can read it or play its voice messages.
 
@@ -78,6 +78,34 @@ Brevo's free plan sends 300 emails a day:
 4. Redeploy.
 
 Without email, everything still works. People see confirmations in **My trips** and use the WhatsApp buttons, and "Forgot password" is hidden.
+
+## SMS (free, sent from your own Android phone)
+
+No SMS or WhatsApp company sends to Indian numbers for free. The free option is **SMS Gateway for Android** (open source, https://sms-gate.app). It sends texts from an Android phone's own SIM, and most Indian plans include 100 free SMS a day.
+
+When SMS is set up, Saathi texts:
+- the driver, when someone asks for a seat;
+- the passenger, when the driver confirms, with the driver's number;
+- the passenger's **alternative number**, when the seat is confirmed, with the route, time, and the driver's name, number and vehicle;
+- the passenger, if the driver cancels, with a link to another ride on the same route.
+
+Setup:
+1. On an Android phone with a SIM that has SMS, install **SMS Gateway for Android** from the Play Store (or from https://github.com/capcom6/android-sms-gateway).
+2. Open it, choose **Cloud server**, and turn it on. The **Home** tab shows a **username** and **password**.
+3. In Vercel, open **Settings → Environment Variables** and add `SMSGATE_USER` and `SMSGATE_PASS` with those values. Then redeploy.
+4. Keep that phone on, charged and online. Messages are sent from its number.
+
+If you run your own SMS Gateway server, also set `SMSGATE_URL` (the default is `https://api.sms-gate.app/3rdparty/v1`).
+
+## Checking email and SMS
+
+The site owner's profile shows a **Notifications** card with a **Send test** button for email and for SMS. If a test fails, the card shows the error the mail or SMS server gave. The owner is the account whose email matches `ADMIN_EMAIL`, or `MAIL_FROM` if `ADMIN_EMAIL` isn't set.
+
+## UPI payments
+
+- When a driver uploads their UPI QR on **Offer a ride**, Saathi reads the UPI ID from it, in the browser, and fills in the **UPI ID** field. Drivers can also type the ID.
+- Once a seat is confirmed, the passenger sees **Pay ₹… by UPI** with GPay, PhonePe, Paytm, BHIM and Other buttons. Each opens that app with the driver's UPI ID and the amount already filled in. On Android, tapping the QR opens the phone's list of all UPI apps.
+- Some UPI apps limit payments to personal UPI IDs that start from a link. If that happens, the passenger can scan the QR or pay to the UPI ID shown.
 
 ## Location features (free, no keys)
 
