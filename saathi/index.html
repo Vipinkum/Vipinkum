@@ -129,9 +129,6 @@ main.wrap{padding-block:22px 64px}
 .seg input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
 .seg label:has(input:checked){background:var(--sign-ink);color:var(--sign)}
 .seg label:has(input:focus-visible){outline:3px solid var(--focus);outline-offset:1px}
-.popular{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px;color:var(--sign-soft)}
-.chip{border:1px solid var(--sign-faint);background:rgba(255,255,255,.06);color:var(--sign-ink);border-radius:999px;padding:6px 13px 4px;font:500 14px var(--f-body);cursor:pointer}
-.chip:hover{border-color:var(--sign-rule);background:var(--sign-2)}
 @media (max-width:820px){
   .sign{padding:22px 18px 34px;border-radius:20px}
   .sign-arrow{display:none}
@@ -349,7 +346,7 @@ fieldset{border:0;margin:0;padding:0;min-width:0}
 .pf-id{display:flex;align-items:center;gap:16px;min-width:0}
 .pf-id .av{width:66px;height:66px;font-size:24px}
 .pf-id b{display:block;font:800 23px var(--f-display);padding-top:3px;overflow-wrap:anywhere}
-.pf-id div>span{display:block;color:var(--muted);font-size:14.5px;overflow-wrap:anywhere}
+.pf-id div>span:not(.av){display:block;color:var(--muted);font-size:14.5px;overflow-wrap:anywhere}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .stat{background:var(--surface-2);border-radius:14px;padding:12px 10px 10px;min-width:0}
 .stat b{display:block;font:600 24px/1.1 var(--f-mono)}
@@ -387,6 +384,110 @@ details.card form{display:grid;gap:14px}
 .about{margin:0;font-size:15px;color:var(--muted)}
 .about b{color:var(--ink)}
 
+/* short tab labels on narrow screens */
+.l-short{display:none}
+@media (max-width:960px){.l-long{display:none}.l-short{display:inline}}
+@media (max-width:720px){.tabs{grid-template-columns:repeat(5,1fr)}.tabs a{font-size:11.5px;padding-inline:2px}}
+.vh{position:absolute!important;width:1px!important;height:1px!important;min-height:0!important;margin:-1px!important;padding:0!important;border:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important}
+img.av{object-fit:cover;padding:0;background:var(--surface-2)}
+
+/* profile photo */
+.pf-photo{position:relative;flex:none}
+.pf-cam{position:absolute;right:-4px;bottom:-4px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--brand);color:var(--brand-ink);border:3px solid var(--surface);cursor:pointer}
+.pf-cam svg{width:15px;height:15px}
+.vh:focus-visible+.pf-cam,.vh:focus-visible+label,.vh:focus-visible+div label{outline:3px solid var(--focus);outline-offset:2px}
+.pf-acts{display:flex;gap:4px 14px;flex-wrap:wrap;margin-top:6px}
+.pf-acts .linkbtn,.pf-acts label{padding:2px 0;font-size:13.5px}
+label.linkbtn{display:inline-block}
+
+/* payment QR */
+.qrdrop{display:flex;align-items:center;gap:14px;border:1.5px dashed var(--line);border-radius:14px;padding:14px 16px;cursor:pointer;background:var(--surface-2)}
+.qrdrop:hover{border-color:var(--brand)}
+.qrdrop svg{width:30px;height:30px;color:var(--brand)}
+.qrdrop b{display:block;font-family:var(--f-display);padding-top:2px}
+.qrdrop small{color:var(--muted);font-size:13.5px}
+.qrset{display:flex;align-items:center;gap:14px;border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--surface-2)}
+.qrset img{width:64px;height:64px;object-fit:contain;background:#fff;border-radius:8px}
+.qrset .acts{display:flex;gap:12px;margin-left:auto}
+.qrbox{display:flex;gap:16px;align-items:center;background:var(--surface-2);border-radius:16px;padding:14px}
+.qrbox img{width:132px;height:132px;object-fit:contain;background:#fff;border-radius:10px;flex:none}
+.qrbox b{display:block;font-family:var(--f-display);font-size:17px}
+.qrbox span{display:block;color:var(--muted);font-size:14px;margin:2px 0 6px}
+.qrbox a{font:700 14px var(--f-display);color:var(--brand);margin-right:14px}
+@media (max-width:420px){.qrbox{flex-direction:column;align-items:flex-start}.qrbox img{width:180px;height:180px}}
+.share{display:grid;gap:10px;border:1.5px solid var(--line);border-radius:16px;padding:14px}
+.share b{display:block;font-family:var(--f-display);font-size:16.5px}
+.share span{display:block;color:var(--muted);font-size:14px}
+.share .row{display:flex;gap:8px}
+.share .row .btn{flex:1}
+
+/* messages */
+.chat{display:grid;grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start;margin-top:22px}
+.clist{position:sticky;top:88px;background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh-1);padding:6px;display:grid;gap:2px;max-height:calc(100vh - 120px);overflow:auto}
+.citem{display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:14px;text-decoration:none;color:var(--ink);min-width:0}
+.citem:hover{background:var(--surface-2)}
+.citem[aria-current="true"]{background:var(--brand-soft)}
+.citem .av{width:46px;height:46px;font-size:16px}
+.citem .ct{flex:1;min-width:0;display:grid;gap:1px}
+.citem .ct b{font-weight:600;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.citem .rl{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.citem .last{font-size:14px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.citem.unread .last{color:var(--ink);font-weight:600}
+.citem .side{display:grid;justify-items:end;gap:6px;align-self:start;padding-top:2px}
+.citem time{font-size:12px;color:var(--muted);white-space:nowrap}
+.thread{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh-1);display:flex;flex-direction:column;min-height:440px;min-width:0}
+.th-head{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:65px;background:var(--surface);border-radius:20px 20px 0 0;z-index:3}
+.th-head .back{display:none;width:40px;height:40px;border-radius:50%;border:0;background:var(--surface-2);place-items:center;cursor:pointer;color:var(--ink);flex:none}
+.th-head .back svg{width:20px;height:20px}
+.th-head .av{width:42px;height:42px}
+.th-head .tt{flex:1;min-width:0}
+.th-head .tt b{display:block;font-family:var(--f-display);font-size:17px;padding-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.th-head .tt span{display:block;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msgs{flex:1;display:flex;flex-direction:column;gap:6px;padding:16px}
+.msgs .hint{align-self:center;text-align:center;max-width:36ch;margin:auto 0}
+.dayline{align-self:center;font:700 11.5px var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:10px 0 4px}
+.bub{max-width:min(80%,460px);padding:8px 12px 6px;border-radius:18px;background:var(--surface-2);align-self:flex-start;font-size:15.5px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;border-bottom-left-radius:6px}
+.bub.me{align-self:flex-end;background:var(--brand);color:var(--brand-ink);border-bottom-left-radius:18px;border-bottom-right-radius:6px}
+.bub time{display:block;font-size:11px;opacity:.72;text-align:right;margin-top:1px}
+.bub.pending{opacity:.6}
+.voice{display:flex;align-items:center;gap:10px;min-width:210px;padding:2px 0}
+.voice button{width:38px;height:38px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--surface);color:var(--brand);cursor:pointer;flex:none}
+.bub.me .voice button{background:var(--brand-ink);color:var(--brand)}
+.voice button svg{width:18px;height:18px}
+.vbar{flex:1;height:4px;border-radius:2px;background:color-mix(in srgb,currentColor 25%,transparent);overflow:hidden}
+.vbar i{display:block;height:100%;width:0;background:currentColor;border-radius:2px}
+.vt{font:500 12.5px var(--f-mono);min-width:34px;text-align:right}
+.composer{position:sticky;bottom:0;display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid var(--line);background:var(--surface);border-radius:0 0 20px 20px;z-index:3}
+.composer textarea{flex:1;min-width:0;height:46px;max-height:140px;resize:none;border:1.5px solid var(--line);border-radius:23px;background:var(--surface-2);color:var(--ink);padding:11px 16px 9px;font:500 16px/1.35 var(--f-body)}
+.composer textarea:focus{outline:none;border-color:var(--brand);background:var(--surface)}
+.ib{width:46px;height:46px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--brand);color:var(--brand-ink);cursor:pointer;flex:none}
+.ib.ghost{background:var(--surface-2);color:var(--ink)}
+.ib svg{width:21px;height:21px}
+.ib:disabled{opacity:.5;cursor:not-allowed}
+.rec{flex:1;display:flex;align-items:center;gap:10px;height:46px;padding:0 16px;border-radius:23px;background:var(--rose-soft);color:var(--rose);font:600 15px var(--f-mono)}
+.rec i{width:10px;height:10px;border-radius:50%;background:var(--rose);animation:blink 1s steps(2,start) infinite}
+.rec span+span{font:500 14px var(--f-body);color:var(--muted)}
+@keyframes blink{to{visibility:hidden}}
+@media (max-width:820px){
+  .chat{grid-template-columns:minmax(0,1fr);margin-top:16px}
+  .chat.open .clist{display:none}
+  .chat:not(.open) .thread{display:none}
+  .clist{position:static;max-height:none}
+  .th-head .back{display:grid}
+  #v-chats.open-thread .page-head{display:none}
+}
+@media (max-width:520px){
+  .th-head{gap:10px;padding:10px 12px}
+  .th-head .av{width:38px;height:38px}
+  .th-head .btn{min-height:36px;padding:3px 11px 0;font-size:13px}
+  .th-head .tt span{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+}
+@media (max-width:720px){
+  .th-head{top:58px}
+  .composer{bottom:calc(66px + env(safe-area-inset-bottom,0px))}
+  .chat.open{margin-top:0}
+}
+
 .osm{margin:44px 0 0;color:var(--muted);font-size:13px;text-align:center}
 .osm a{color:inherit}
 
@@ -405,9 +506,10 @@ details.card form{display:grid;gap:14px}
       <span>saathi</span>
     </a>
     <nav class="tabs" aria-label="Sections">
-      <a href="#find" data-view="find"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Find a ride</span></a>
-      <a href="#offer" data-view="offer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>Offer a ride</span></a>
-      <a href="#trips" data-view="trips"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 5v12" stroke-dasharray="2 2.5"/></svg><span>My trips</span><span class="badge" id="badge" hidden></span></a>
+      <a href="#find" data-view="find"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="l-long">Find a ride</span><span class="l-short">Find</span></a>
+      <a href="#offer" data-view="offer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span class="l-long">Offer a ride</span><span class="l-short">Offer</span></a>
+      <a href="#trips" data-view="trips"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 5v12" stroke-dasharray="2 2.5"/></svg><span class="l-long">My trips</span><span class="l-short">Trips</span><span class="badge" id="badge" hidden></span></a>
+      <a href="#chats" data-view="chats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4.1A8 8 0 1 1 20 11.5z"/></svg><span class="l-long">Messages</span><span class="l-short">Chats</span><span class="badge" id="badge-chat" hidden></span></a>
       <a href="#profile" data-view="profile" id="tab-profile"><span class="tab-ic"></span><span class="tab-l">Log in</span></a>
     </nav>
     <button type="button" class="install" id="install" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Install app</button>
@@ -441,7 +543,6 @@ details.card form{display:grid;gap:14px}
           <label><input type="radio" name="s-veh" value="car"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17H3.5v-4.5L6 7h11l3 5.5H21V17h-1.5"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5M4 12.5h16"/></svg>Car</label>
           <label><input type="radio" name="s-veh" value="bike"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="16.5" r="3"/><circle cx="18.5" cy="16.5" r="3"/><path d="M5.5 16.5 9 11h6l3.5 5.5M15 11l-1.5-4H11M9 11l2.5 5.5h3"/></svg>Bike</label>
         </div>
-        <div class="popular" id="popular"><span>Popular:</span></div>
       </div>
     </form>
 
@@ -497,6 +598,10 @@ details.card form{display:grid;gap:14px}
         </div>
         <div class="suggest" id="o-suggest" hidden></div>
         <div class="f"><label for="o-vname">Vehicle details <em>(optional)</em></label><input id="o-vname" maxlength="40" placeholder="White Swift Dzire" autocomplete="off"></div>
+        <div class="f"><span class="lbl" id="o-qr-l">Payment QR code <em>(optional)</em></span>
+          <input type="file" id="o-qr-file" class="vh" accept="image/*" aria-labelledby="o-qr-l">
+          <div id="o-qr"></div>
+          <small class="hint">Your UPI QR from GPay, PhonePe or Paytm. Riders see it only after you confirm their seat.</small></div>
         <div class="checks">
           <label class="check"><input type="checkbox" id="o-women"><span><b>Women passengers only</b><small id="o-women-hint">Only women can request a seat.</small></span></label>
           <label class="check" id="o-helmet-row" hidden><input type="checkbox" id="o-helmet" checked><span><b>I'll carry a helmet for my rider</b><small>Riders without their own helmet look for this.</small></span></label>
@@ -518,6 +623,10 @@ details.card form{display:grid;gap:14px}
       <p class="lede">Seat requests, confirmed seats and the rides you're offering.</p>
     </div>
     <div id="trips-body"></div>
+  </section>
+
+  <section id="v-chats" class="view" hidden>
+    <div id="chats-body"></div>
   </section>
 
   <section id="v-profile" class="view" hidden>
@@ -567,7 +676,14 @@ const ICON={
   user:'<svg '+SV+'><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
   clock:'<svg '+SV+'><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
   chat:'<svg '+SV+'><path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4.1A8 8 0 1 1 20 11.5z"/><path d="M9 10.5h6M9 13.5h4"/></svg>',
-  phone:'<svg '+SV+'><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>'
+  phone:'<svg '+SV+'><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>',
+  mic:'<svg '+SV+' stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>',
+  send:'<svg '+SV+' stroke-width="2"><path d="M4 12 20 4l-6 16-3-7z"/><path d="m11 13 9-9"/></svg>',
+  play:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>',
+  pause:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor"/></svg>',
+  camera:'<svg '+SV+' stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  qr:'<svg '+SV+'><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2h-2zM18 14h2M14 18h2M18 18h2v2"/></svg>',
+  back:'<svg '+SV+' stroke-width="2.2"><path d="M15 5 8 12l7 7"/></svg>'
 };
 document.querySelectorAll(".locate").forEach(b=>{b.innerHTML=ICON.locate;});
 
@@ -600,7 +716,8 @@ function avColor(n){let h=0;for(const c of String(n||""))h=(h*31+c.charCodeAt(0)
 /* mode: loading → live (shared API), nostore (no database connected) or offline (last copy) */
 const S={mode:"loading",err:false,user:null,features:{email:false},me:null,rides:[],bookings:[],route:null,
   q:{from:"",to:"",date:"",seats:1,vehicle:"any",fromPt:null,toPt:null},sort:"time",view:"find",openId:null,opener:null,bookN:1,confirm:null,busy:false,
-  authMode:"login",authMsg:"",resetToken:"",after:null,pendingOpen:null,profileKey:""};
+  authMode:"login",authMsg:"",resetToken:"",after:null,pendingOpen:null,profileKey:"",
+  convs:[],chatId:null,chat:{id:null,msgs:[],loaded:false,err:""},sending:false,chatBusy:false};
 
 /* ---------- data shaping ---------- */
 const str=(v,n)=>typeof v==="string"?v.slice(0,n):"";
@@ -619,12 +736,18 @@ function normRide(d){const v=d.vehicle==="bike"?"bike":"car";
   return shape({id:str(d.id,64),from:str(d.from,60),to:str(d.to,60),date:/^\d{4}-\d{2}-\d{2}$/.test(d.date)?d.date:"",time:/^\d{2}:\d{2}$/.test(d.time)?d.time:"00:00",vehicle:v,vehicleName:str(d.vehicleName,40),
     seats:clampInt(d.seats,1,v==="bike"?1:6),price:clampInt(d.price,0,10000),womenOnly:d.womenOnly===true,helmet:d.helmet===true,note:str(d.note,200),
     driverName:str(d.driverName,40),driverBio:str(d.driverBio,200),driverRides:clampInt(d.driverRides,0,9999),driverSince:Number(d.driverSince)||0,
+    driverPhoto:mediaPath(d.driverPhoto),hasQr:d.hasQr===true,qr:mediaPath(d.qr),
     mine:d.mine===true,taken:clampInt(d.taken,0,6),status:d.status==="cancelled"?"cancelled":"open",createdAt:Number(d.createdAt)||0,
     fromLat:d.fromLat,fromLon:d.fromLon,toLat:d.toLat,toLon:d.toLon,roadKm:optInt(d.roadKm,1,5000),roadMin:optInt(d.roadMin,1,6000)});}
 const STATUSES=["pending","confirmed","declined","cancelled"];
 function normBooking(d){return{id:str(d.id,64),rideId:str(d.rideId,64),seats:clampInt(d.seats,1,6),status:STATUSES.includes(d.status)?d.status:"pending",
   createdAt:Number(d.createdAt)||0,decidedAt:Number(d.decidedAt)||0,message:str(d.message,200),mine:d.mine===true,name:str(d.name,40)||"Passenger",
-  gender:str(d.gender,10),phone:str(d.phone,16),driverPhone:str(d.driverPhone,16)};}
+  gender:str(d.gender,10),phone:str(d.phone,16),driverPhone:str(d.driverPhone,16),photo:mediaPath(d.photo),qr:mediaPath(d.qr),conv:str(d.conv,140)};}
+function normConv(d){const o=d.other||{},r=d.ride;return{id:str(d.id,140),rideId:str(d.rideId,64),role:d.role==="driver"?"driver":"passenger",
+  other:{name:str(o.name,40)||"Saathi member",photo:mediaPath(o.photo)},ride:r?{from:str(r.from,60),to:str(r.to,60),date:str(r.date,10),time:str(r.time,5),status:r.status==="cancelled"?"cancelled":"open"}:null,
+  lastText:str(d.lastText,160),lastAt:Number(d.lastAt)||0,lastMine:d.lastMine===true,unread:clampInt(d.unread,0,999)};}
+/* Only our own /api/media links are ever used as image or audio sources */
+function mediaPath(v){return typeof v==="string"&&/^\/api\/media\?id=[a-f0-9]{6,64}$/.test(v)?v:"";}
 const isActive=b=>b.status==="pending"||b.status==="confirmed";
 const rideById=id=>S.rides.find(r=>r.id===id)||null;
 const seatsLeft=r=>Math.max(0,r.seats-(r.taken||0));
@@ -637,8 +760,10 @@ const awayKm=r=>S.me&&r.fromPt?gcKm(S.me,r.fromPt):null;
 /* Requests on my rides that still need an answer */
 function waiting(){return S.bookings.filter(b=>{if(b.mine||b.status!=="pending")return false;const r=rideById(b.rideId);return!!r&&r.status==="open"&&!isPast(r);});}
 
-function person(r){return{name:isMine(r)?"You":(r.driverName||"Saathi member")};}
-function avatarHTML(p){return'<span class="av" aria-hidden="true" style="background:'+avColor(p.name)+'">'+esc(initials(p.name))+"</span>";}
+function person(r){return isMine(r)?{name:"You",photo:S.user?S.user.photo:""}:{name:r.driverName||"Saathi member",photo:r.driverPhoto};}
+function avatarHTML(p){
+  if(p.photo)return'<img class="av" src="'+esc(p.photo)+'" alt="" loading="lazy" decoding="async">';
+  return'<span class="av" aria-hidden="true" style="background:'+avColor(p.name)+'">'+esc(initials(p.name))+"</span>";}
 function milestone(to,km){return'<span class="ms" role="img" aria-label="'+km+' km to '+esc(to)+'"><i></i><span>'+esc(shortName(to))+"</span><b>"+km+"</b></span>";}
 const first=n=>String(n||"").trim().split(/\s+/)[0]||"there";
 const plural=(n,one,many)=>n+" "+(n===1?one:many);
@@ -652,7 +777,8 @@ const sinceLabel=t=>t?new Date(t).toLocaleDateString("en-IN",{month:"long",year:
 
 /* ---------- data: shared API, or the last copy when offline ---------- */
 const CKEY="saathi.cache";
-function applyState(d){S.user=d.me||null;S.features=d.features||{email:false};S.rides=(d.rides||[]).map(normRide);S.bookings=(d.bookings||[]).map(normBooking);}
+function applyState(d){S.user=d.me?Object.assign({},d.me,{photo:mediaPath(d.me.photo),qr:mediaPath(d.me.qr)}):null;S.features=d.features||{email:false};
+  S.rides=(d.rides||[]).map(normRide);S.bookings=(d.bookings||[]).map(normBooking);S.convs=(d.convs||[]).map(normConv);}
 function loadCache(){try{const c=JSON.parse(store.get(CKEY)||"null");if(c)applyState(c);}catch(_){}}
 function clearCache(){try{localStorage.removeItem(CKEY);}catch(_){}}
 async function api(method,path,body){
@@ -681,7 +807,7 @@ async function load(){
 function rideBody(o){return{from:o.from,to:o.to,date:o.date,time:o.time,vehicle:o.vehicle,vehicleName:o.vehicleName,seats:o.seats,
   price:o.price==null?o.suggested:o.price,womenOnly:o.womenOnly,helmet:o.helmet,note:o.note,
   fromLat:o.fromPt?o.fromPt[0]:null,fromLon:o.fromPt?o.fromPt[1]:null,toLat:o.toPt?o.toPt[0]:null,toLon:o.toPt?o.toPt[1]:null,
-  roadKm:o.road?o.road.km:null,roadMin:o.road?o.road.min:null};}
+  roadKm:o.road?o.road.km:null,roadMin:o.road?o.road.min:null,qr:o.qr||""};}
 async function createRide(o){await api("POST","/api/rides",rideBody(o));await load();}
 async function cancelRide(r){await api("PATCH","/api/rides?id="+encodeURIComponent(r.id));await load();}
 async function requestSeats(r,n,message){const d=await api("POST","/api/bookings",{rideId:r.id,seats:n,message});await load();return d;}
@@ -774,7 +900,7 @@ function wantRoute(a,b){
 
 /* ---------- ride card ---------- */
 function cardHTML(r,opt){opt=opt||{};
-  const arr=r.dur!=null?addTime(r.time,r.dur):null,left=seatsLeft(r),p=opt.you?{name:"You"}:person(r),bike=r.vehicle==="bike";
+  const arr=r.dur!=null?addTime(r.time,r.dur):null,left=seatsLeft(r),p=opt.you?{name:"You",photo:S.user?S.user.photo:""}:person(r),bike=r.vehicle==="bike";
   const mb=!opt.static&&S.user&&!r.mine?myBooking(r.id):null;
   const tags=[];
   tags.push('<span class="tg">'+(bike?ICON.bike:ICON.car)+esc(r.vehicleName||(bike?"Bike":"Car"))+"</span>");
@@ -787,6 +913,7 @@ function cardHTML(r,opt){opt=opt||{};
   if(r.mine&&!opt.static&&!opt.status&&r.status==="open"&&!isPast(r)){const n=requestsFor(r.id).filter(b=>b.status==="pending").length;if(n)tags.push('<span class="tg wait">'+ICON.clock+plural(n,"request","requests")+"</span>");}
   if(r.womenOnly)tags.push('<span class="tg rose">'+ICON.women+"Women only</span>");
   if(r.helmet&&bike)tags.push('<span class="tg sky">'+ICON.helmet+"Helmet</span>");
+  if(r.hasQr||opt.qr)tags.push('<span class="tg">'+ICON.qr+"UPI</span>");
   const away=opt.static?null:awayKm(r);if(away!=null)tags.push('<span class="tg sky">'+ICON.near+(away<1?"Under 1 km away":Math.round(away)+" km away")+"</span>");
   const tag=opt.static?"div":"button";
   return"<"+tag+(opt.static?"":' type="button" data-ride="'+esc(r.id)+'"')+' class="ride'+((r.status==="cancelled"||isPast(r))&&!opt.static?" dim":"")+'">'
@@ -847,7 +974,15 @@ function renderFind(){
 }
 
 /* ---------- offer ---------- */
-const OF={seats:3};
+const OF={seats:3,qr:undefined}; /* qr: {data} new upload, {id,url} saved, null none */
+function renderQrPick(){
+  const el=$("#o-qr");if(!el)return;
+  if(OF.qr===undefined&&S.user&&S.user.qrId)OF.qr={id:S.user.qrId,url:S.user.qr};
+  const q=OF.qr,src=q?(q.data||q.url):"";
+  const k=src?"set:"+src.length+src.slice(-24):"none";if(el.dataset.k===k)return;el.dataset.k=k;
+  el.innerHTML=src?'<div class="qrset"><img src="'+esc(src)+'" alt="Your payment QR code"><div><b>QR added</b><br><span class="hint">'+(q.data?"Uploads when you publish.":"Saved from last time.")+'</span></div><div class="acts"><label for="o-qr-file" class="linkbtn">Change</label><button type="button" class="linkbtn" data-act="qr-remove">Remove</button></div></div>'
+    :'<label class="qrdrop" for="o-qr-file">'+ICON.qr+"<span><b>Add your UPI QR code</b><small>A screenshot of it works. Optional.</small></span></label>";
+}
 function offerVeh(){return $("#o-bike").checked?"bike":"car";}
 function readOffer(){
   const vehicle=offerVeh(),fi=$("#o-from"),ti=$("#o-to"),from=fi.value.trim(),to=ti.value.trim(),fromPt=from?ptOf(fi):null,toPt=to?ptOf(ti):null;
@@ -861,6 +996,7 @@ function readOffer(){
 }
 function updateOffer(){
   $("#o-gate").hidden=!!S.user||S.mode==="loading";
+  renderQrPick();
   const wOK=!S.user||S.user.gender==="female",wb=$("#o-women");
   wb.disabled=!wOK;if(!wOK)wb.checked=false;
   $("#o-women-hint").textContent=wOK?"Only women can request a seat.":"For women drivers. Set your gender in Profile to use this.";
@@ -881,7 +1017,7 @@ function updateOffer(){
   $("#o-count").textContent=$("#o-note").value.length+" / 200";
   const draft={id:"draft",from:o.from||"Leaving from",to:o.to||"Going to",date:o.date,time:o.time||"08:00",vehicle:o.vehicle,vehicleName:o.vehicleName,seats:o.seats,
     price:o.price!=null&&!isNaN(o.price)?o.price:(o.suggested||0),womenOnly:o.womenOnly,helmet:o.helmet,note:o.note,status:"open",km:o.km,dur,sample:false};
-  $("#o-preview").innerHTML=(o.date?'<div class="day" style="margin-top:0">'+esc(dayLabel(o.date))+"</div>":"")+cardHTML(draft,{static:true,you:true});
+  $("#o-preview").innerHTML=(o.date?'<div class="day" style="margin-top:0">'+esc(dayLabel(o.date))+"</div>":"")+cardHTML(draft,{static:true,you:true,qr:!!OF.qr});
 }
 function validateOffer(o){
   if(!o.from||!o.to)return"Add where you're leaving from and where you're going.";
@@ -904,6 +1040,8 @@ async function publishRide(e){
   if(!S.user){showErr(err,"");needLogin({hash:"offer"},"Log in or create an account to publish your ride. What you filled in is kept.");return;}
   showErr(err,"");const btn=$("#o-submit");btn.disabled=true;btn.textContent="Publishing…";
   try{
+    if(OF.qr&&OF.qr.data){const d=await api("POST","/api/media",{type:"qr",data:OF.qr.data});setUser(d.user);OF.qr={id:d.user.qrId,url:mediaPath(d.user.qr)};}
+    o.qr=OF.qr&&OF.qr.id?OF.qr.id:"";
     await createRide(o);
     toast("Ride published. You’ll see seat requests in My trips.",4500);
     $("#o-note").value="";$("#o-price").value="";
@@ -923,14 +1061,15 @@ function reqHTML(b,r,withRide){
   const tag=b.status==="confirmed"?'<span class="tg ok">Confirmed</span>':b.status==="pending"?'<span class="tg wait">Waiting</span>':'<span class="tg">'+(b.status==="declined"?"Declined":"Cancelled")+"</span>";
   let h='<div class="req'+(isActive(b)?"":" dim")+'">'+avatarHTML({name:b.name})+'<div class="nm"><b>'+esc(b.name)+"</b><span>"+esc(bits.join(" · "))+"</span></div>"+tag;
   if(b.message&&isActive(b))h+='<p class="msg">'+esc(b.message)+"</p>";
+  const msgBtn=b.conv&&isActive(b)?'<a class="btn ghost sm" href="#chat='+esc(b.conv)+'">'+ICON.chat+"Message</a>":"";
   if(b.status==="pending"&&live){
     h+='<div class="acts">'+(S.confirm==="decline:"+b.id
       ?'<span class="hint"><b>Decline '+esc(first(b.name))+'’s request?</b> They can’t ask again for this ride.</span><button type="button" class="btn ghost sm" data-act="confirm-no">Keep</button><button type="button" class="btn danger solid sm" data-act="decline" data-id="'+esc(b.id)+'"'+(S.busy?" disabled":"")+">Decline</button>"
-      :'<button type="button" class="btn ghost sm" data-act="ask-decline" data-id="'+esc(b.id)+'">Decline</button><button type="button" class="btn primary sm" data-act="accept" data-id="'+esc(b.id)+'"'+(S.busy?" disabled":"")+">"+ICON.tick+"Confirm</button>")+"</div>";
+      :msgBtn+'<button type="button" class="btn ghost sm" data-act="ask-decline" data-id="'+esc(b.id)+'">Decline</button><button type="button" class="btn primary sm" data-act="accept" data-id="'+esc(b.id)+'"'+(S.busy?" disabled":"")+">"+ICON.tick+"Confirm</button>")+"</div>";
   }else if(b.status==="confirmed"&&b.phone&&live){
     const text="Hi "+first(b.name)+", this is "+(S.user?S.user.name:"your driver")+" from Saathi. Your "+plural(n,"seat","seats")+" from "+tripLine(r)+" "+(n===1?"is":"are")+" confirmed. Where should I pick you up?";
-    h+='<div class="acts"><a class="btn wa sm" href="'+esc(waUrl(b.phone,text))+'" target="_blank" rel="noopener" aria-label="WhatsApp '+esc(first(b.name))+'">'+ICON.chat+'WhatsApp</a><a class="btn ghost sm" href="'+esc(telUrl(b.phone))+'" aria-label="Call '+esc(first(b.name))+'">'+ICON.phone+"Call</a></div>";
-  }
+    h+='<div class="acts"><a class="btn wa sm" href="'+esc(waUrl(b.phone,text))+'" target="_blank" rel="noopener" aria-label="WhatsApp '+esc(first(b.name))+'">'+ICON.chat+'WhatsApp</a><a class="btn ghost sm" href="'+esc(telUrl(b.phone))+'" aria-label="Call '+esc(first(b.name))+'">'+ICON.phone+"Call</a>"+msgBtn+"</div>";
+  }else if(msgBtn)h+='<div class="acts">'+msgBtn+"</div>";
   return h+"</div>";
 }
 
@@ -983,6 +1122,7 @@ function sheetHTML(r){
   const away=awayKm(r);if(away!=null)tags.push('<span class="tg sky">'+ICON.near+(away<1?"Pickup under 1 km away":"Pickup "+Math.round(away)+" km away")+"</span>");
   h+='<div class="pills">'+tags.join("")+"</div>";
   if(r.note)h+='<p class="note">'+esc(r.note)+"</p>";
+  if(isDriver&&r.qr)h+='<div class="qrset"><img src="'+esc(r.qr)+'" alt="Your payment QR code"><div><b>Payment QR attached</b><br><span class="hint">Riders see it once you confirm their seat.</span></div></div>';
   if(isDriver){
     const rank={pending:0,confirmed:1,declined:2,cancelled:3};
     const bs=requestsFor(r.id).sort((a,b)=>rank[a.status]-rank[b.status]||a.createdAt-b.createdAt);
@@ -1007,6 +1147,8 @@ function sheetHTML(r){
         const text="Hi "+dn+", this is "+S.user.name+" from Saathi. My "+plural(b.seats,"seat","seats")+" on your ride from "+tripLine(r)+" "+(b.seats===1?"is":"are")+" confirmed. Where should I meet you?";
         f+='<div class="row"><a class="btn wa" href="'+esc(waUrl(b.driverPhone,text))+'" target="_blank" rel="noopener" aria-label="WhatsApp '+esc(dn)+'">'+ICON.chat+'WhatsApp</a><a class="btn ghost" href="'+esc(telUrl(b.driverPhone))+'">'+ICON.phone+'Call</a></div><p class="hint">'+esc(dn)+"’s number: <b>"+esc(fmtPhone(b.driverPhone))+"</b></p>";
       }
+      if(b.qr&&!past&&r.price>0)f+='<div class="qrbox"><img src="'+esc(b.qr)+'" alt="'+esc(dn)+'’s UPI QR code"><div><b>Pay '+inr(b.seats*r.price)+" by UPI</b><span>Save the QR and scan it from your gallery in GPay, PhonePe or Paytm, or pay "+esc(dn)+' in cash.</span><a href="'+esc(b.qr)+'" download="saathi-upi-qr.jpg">Save QR</a><a href="'+esc(b.qr)+'" target="_blank" rel="noopener">Open full size</a></div></div>';
+      if(!past)f+=shareHTML(r,b);
       if(!past)f+=cancelBtn("Cancel my seat");
     }else if(b&&b.status==="declined")f=stateHTML("no",ICON.x,"Request not accepted",esc(dn)+" couldn’t take this one. Other rides on this route may still have seats.");
     else if(past)f='<p class="hint">This ride has already left.</p>';
@@ -1021,7 +1163,25 @@ function sheetHTML(r){
       f+='<button type="button" class="btn primary wide" data-act="request"'+(S.busy?" disabled":"")+">"+(S.busy?"Sending request…":"Request "+plural(n,"seat","seats")+" · "+inr(n*r.price))+'</button><p class="hint">Nothing is booked until '+esc(dn)+" confirms. You pay the driver directly on the day.</p>";
     }
   }
+  if(!isDriver&&S.user&&r.status==="open")f+='<a class="btn ghost wide" href="#chat='+esc(r.id+"."+S.user.id)+'">'+ICON.chat+"Message "+esc(dn)+"</a>";
   return h+'<div class="foot">'+f+"</div>";
+}
+/* One tap sends the trip and driver details to the passenger's alternative number (free: WhatsApp or SMS from their phone) */
+function shareText(r,b){
+  const arr=r.dur!=null?addTime(r.time,r.dur):null;
+  return"Saathi trip details for "+S.user.name+"\n"
+    +"From: "+r.from+"\nTo: "+r.to+"\n"
+    +"Date: "+shortDate(r.date)+", leaving "+r.time+(arr?" (arrives about "+arr.t+")":"")+"\n"
+    +"Driver: "+r.driverName+(b.driverPhone?", "+fmtPhone(b.driverPhone):"")+"\n"
+    +"Vehicle: "+(r.vehicleName||(r.vehicle==="bike"?"Bike":"Car"))+"\n"
+    +"Seats: "+b.seats+"\n"+location.origin;
+}
+function shareHTML(r,b){
+  const u=S.user;
+  if(!u.altPhone)return'<p class="hint">Add an alternative number in <a href="#profile">your profile</a> to send these trip and driver details to family or a friend in one tap.</p>';
+  const t=shareText(r,b),who=u.altName||"your alternative number";
+  return'<div class="share"><div><b>Send trip details to '+esc(who)+"</b><span>"+esc(fmtPhone(u.altPhone))+" gets the route, time, and the driver’s name, number and vehicle.</span></div>"
+    +'<div class="row"><a class="btn wa sm" href="'+esc(waUrl(u.altPhone,t))+'" target="_blank" rel="noopener">'+ICON.chat+'WhatsApp</a><a class="btn ghost sm" href="'+esc("sms:+"+digits(u.altPhone)+"?&body="+encodeURIComponent(t))+'">SMS</a></div></div>';
 }
 function openRide(id,opener){S.openId=id;S.opener=opener||null;S.bookN=1;S.confirm=null;renderSheet();$("#sheet").hidden=false;document.documentElement.style.overflow="hidden";$("#sheet-card").focus();}
 function closeSheet(){if($("#sheet").hidden)return;$("#sheet").hidden=true;S.openId=null;S.confirm=null;document.documentElement.style.overflow="";if(S.opener&&document.contains(S.opener))S.opener.focus();}
@@ -1069,10 +1229,14 @@ function authHTML(){
 function profileHTML(){
   const u=S.user,ph=digits(u.phone).slice(-10);
   let f='<form class="form" data-form="profile" novalidate>';
-  f+='<div class="pf-id">'+avatarHTML({name:u.name})+"<div><b>"+esc(u.name)+"</b><span>"+esc(u.email)+"</span>"+(u.createdAt?"<span>On Saathi since "+esc(sinceLabel(u.createdAt))+"</span>":"")+"</div></div>";
+  f+='<div class="pf-id"><div class="pf-photo">'+avatarHTML({name:u.name,photo:u.photo})+'<input type="file" id="pf-photo-file" class="vh" accept="image/*"><label for="pf-photo-file" class="pf-cam" title="Change photo">'+ICON.camera+'<span class="vh">Change profile photo</span></label></div>'
+    +"<div><b>"+esc(u.name)+"</b><span>"+esc(u.email)+"</span>"+(u.createdAt?"<span>On Saathi since "+esc(sinceLabel(u.createdAt))+"</span>":"")
+    +'<div class="pf-acts">'+(u.photo?'<button type="button" class="linkbtn" data-act="photo-remove">Remove photo</button>':'<span class="hint">Add a photo so riders and drivers recognise you.</span>')+"</div></div></div>";
   f+=fld("pf-name","Name",'<input id="pf-name" name="name" maxlength="40" autocomplete="name" value="'+esc(u.name)+'">');
   f+=fld("pf-phone","Mobile number <em>(for WhatsApp)</em>",phoneHTML("pf-phone",ph),"Shared only with people whose seat is confirmed on the same ride.");
   f+=fld("pf-gender","Gender",genderHTML("pf-gender",u.gender),"Needed to request or offer women-only rides.");
+  f+=fld("pf-altname","Alternative contact’s name <em>(optional)</em>",'<input id="pf-altname" name="altName" maxlength="30" placeholder="Papa, Didi, Rahul" value="'+esc(u.altName)+'">');
+  f+=fld("pf-alt","Alternative number <em>(family or friend)</em>",phoneHTML("pf-alt",digits(u.altPhone).slice(-10)).replace('name="phone"','name="altPhone"'),"When a driver confirms your seat, you can send this number the ride and driver details in one tap.");
   f+=fld("pf-bio","About you <em>(optional)</em>",'<textarea id="pf-bio" name="bio" maxlength="200" placeholder="Office commuter, quiet rider, fine with music…">'+esc(u.bio)+"</textarea>",'<span id="pf-count">'+u.bio.length+" / 200</span> · Shown to riders on your listings.");
   f+='<p class="err" role="alert" hidden></p><p class="okmsg" role="status" hidden></p><button class="btn primary" type="submit">Save changes</button></form>';
   let side='<div class="pf-side"><div class="card"><div class="eyebrow">Your activity</div><div class="stats" id="pf-stats"></div></div>';
@@ -1081,18 +1245,40 @@ function profileHTML(){
   side+='<button type="button" class="btn ghost wide" data-act="logout">Log out</button></div>';
   return'<div class="page-head"><h1 class="h1">Your profile</h1><p class="lede">Drivers and riders see your name and what you write about yourself. Your number is shared only once a seat is confirmed.</p></div><div class="pf">'+f+side+"</div>";
 }
+function setUser(u){S.user=u?Object.assign({},u,{photo:mediaPath(u.photo),qr:mediaPath(u.qr)}):null;}
+/* Resize a picked image in the browser before upload: square crop for photos, plain resize for QR codes */
+function readImage(file,max,square){return new Promise((res,rej)=>{
+  if(!file||!/^image\//.test(file.type||"image/"))return rej(new Error("Pick an image file, like a JPG or PNG."));
+  const url=URL.createObjectURL(file),img=new Image();
+  img.onload=()=>{let sw=img.naturalWidth,sh=img.naturalHeight,sx=0,sy=0;
+    if(square){const m=Math.min(sw,sh);sx=(sw-m)/2;sy=(sh-m)/2;sw=sh=m;}
+    const k=Math.min(1,max/Math.max(sw,sh)),w=Math.max(1,Math.round(sw*k)),h=Math.max(1,Math.round(sh*k));
+    const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(img,sx,sy,sw,sh,0,0,w,h);
+    URL.revokeObjectURL(url);res(c.toDataURL("image/jpeg",square?.86:.92));};
+  img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("Couldn’t read that image. Try a JPG or PNG."));};
+  img.src=url;});}
+async function uploadPhoto(file){
+  if(!ready())return toast("Connect to the internet to change your photo.");
+  try{const data=await readImage(file,360,true);toast("Uploading photo…",8000);
+    const d=await api("POST","/api/media",{type:"photo",data});setUser(d.user);await load();renderAll();toast("Photo updated");}
+  catch(x){toast(x.message,5000);}
+}
 function updateStats(){const el=$("#pf-stats");if(!el||!S.user)return;
   const offered=S.rides.filter(r=>r.mine&&r.status==="open").length,rode=S.bookings.filter(b=>b.mine&&b.status==="confirmed").reduce((a,b)=>a+b.seats,0),w=waiting().length;
   const st=(n,l)=>'<div class="stat"><b>'+n+"</b><span>"+l+"</span></div>";
   el.innerHTML=st(offered,offered===1?"ride offered":"rides offered")+st(rode,rode===1?"seat confirmed":"seats confirmed")+st(w,w===1?"request to answer":"requests to answer");}
 function renderProfile(force){
   const el=$("#profile-body"),u=S.user,showAuth=!u||(S.authMode==="reset"&&!!S.resetToken);
-  const k=showAuth?"auth:"+S.authMode+":"+S.authMsg+":"+S.features.email:"me:"+[u.id,u.name,u.phone,u.gender,u.bio,u.email].join("|");
+  const k=showAuth?"auth:"+S.authMode+":"+S.authMsg+":"+S.features.email:"me:"+[u.id,u.name,u.phone,u.gender,u.bio,u.email,u.photo,u.altName,u.altPhone].join("|");
   if(force||k!==S.profileKey){S.profileKey=k;el.innerHTML=showAuth?authHTML():profileHTML();}
   updateStats();
 }
 function renderAccount(){
-  const t=$("#tab-profile");t.querySelector(".tab-ic").innerHTML=S.user?avatarHTML({name:S.user.name}):ICON.user;
+  const t=$("#tab-profile"),ic=t.querySelector(".tab-ic"),icon=S.user?avatarHTML({name:S.user.name,photo:S.user.photo}):ICON.user;
+  if(ic.dataset.k!==icon){ic.dataset.k=icon;ic.innerHTML=icon;}
+  const u=S.user?S.convs.reduce((a,c)=>a+unreadOf(c),0):0,cb=$("#badge-chat"),cl=document.querySelector('.tabs a[data-view="chats"]');
+  cb.textContent=u>9?"9+":String(u);cb.hidden=!u;
+  if(u)cl.setAttribute("aria-label","Messages, "+plural(u,"unread message","unread messages"));else cl.removeAttribute("aria-label");
   t.querySelector(".tab-l").textContent=S.user?"Profile":"Log in";
   const n=S.user?waiting().length:0,b=$("#badge"),tl=document.querySelector('.tabs a[data-view="trips"]');
   b.textContent=n>9?"9+":String(n);b.hidden=!n;
@@ -1113,8 +1299,8 @@ async function submitAccount(f){
     bad=body.name.length<2?"Add your name (at least 2 letters).":!EMAIL_RE.test(body.email)?"Enter a valid email address.":!phoneOk(body.phone)?"Enter a 10-digit Indian mobile number.":body.password.length<8?"Use a password of at least 8 characters.":"";}
   else if(kind==="forgot"){body={action:"forgot",email:v("email")};bad=!EMAIL_RE.test(body.email)?"Enter the email you signed up with.":"";}
   else if(kind==="reset"){body={action:"reset",token:S.resetToken,password:pw("password")};bad=body.password.length<8?"Use a password of at least 8 characters.":"";}
-  else if(kind==="profile"){body={action:"profile",name:v("name"),phone:v("phone"),gender:v("gender"),bio:v("bio")};
-    bad=body.name.length<2?"Add your name (at least 2 letters).":!phoneOk(body.phone)?"Enter a 10-digit Indian mobile number.":"";}
+  else if(kind==="profile"){body={action:"profile",name:v("name"),phone:v("phone"),gender:v("gender"),bio:v("bio"),altName:v("altName"),altPhone:v("altPhone")};
+    bad=body.name.length<2?"Add your name (at least 2 letters).":!phoneOk(body.phone)?"Enter a 10-digit Indian mobile number.":body.altPhone&&!phoneOk(body.altPhone)?"The alternative number needs to be a 10-digit Indian mobile number.":"";}
   else if(kind==="password"){body={action:"password",current:pw("current"),password:pw("password")};bad=!body.current?"Enter your current password.":body.password.length<8?"Use a new password of at least 8 characters.":"";}
   else return;
   if(bad)return showErr(err,bad);
@@ -1124,7 +1310,7 @@ async function submitAccount(f){
     const d=await api("POST","/api/auth",body);
     if(d.features)S.features=d.features;
     if(kind==="forgot"){ok.textContent="If there’s an account for "+body.email+", a reset link is on its way. It works for 30 minutes.";ok.hidden=false;return;}
-    S.user=d.user||null;
+    setUser(d.user);
     if(kind==="password"){f.reset();ok.textContent="Password changed. Other devices have been logged out.";ok.hidden=false;return;}
     if(kind==="profile"){await load();renderAll();toast("Profile saved");return;}
     S.authMsg="";
@@ -1148,7 +1334,14 @@ async function act(a,el){
   if(a==="ask-decline"){S.confirm="decline:"+id;renderSheet();renderTrips();return;}
   if(a==="pw-toggle"){const i=el.parentElement.querySelector("input"),show=i.type==="password";i.type=show?"text":"password";el.textContent=show?"Hide":"Show";el.setAttribute("aria-label",show?"Hide password":"Show password");return;}
   if(a==="auth-login"||a==="auth-signup"||a==="auth-forgot"){S.authMode=a.slice(5);if(a==="auth-forgot")S.authMsg="";renderProfile(true);const i=$("#profile-body form input");if(i)i.focus();return;}
-  if(a==="login"){needLogin({hash:S.view==="profile"?"find":S.view},"");return;}
+  if(a==="login"){needLogin({hash:S.view==="profile"?"find":S.view==="chats"&&S.chatId?"chat="+S.chatId:S.view},"");return;}
+  if(a==="play"){toggleAudio(id);return;}
+  if(a==="chat-back"){location.hash="chats";return;}
+  if(a==="chat-ride"){go("find",id);return;}
+  if(a==="qr-remove"){const had=OF.qr&&OF.qr.id;OF.qr=null;renderQrPick();updateOffer();
+    if(had&&ready())api("DELETE","/api/media?type=qr").then(d=>{setUser(d.user);}).catch(()=>{});return;}
+  if(a==="photo-remove"){if(!ready())return toast("Connect to the internet to change your photo.");
+    try{const d=await api("DELETE","/api/media?type=photo");setUser(d.user);await load();renderAll();toast("Photo removed");}catch(x){toast(x.message,5000);}return;}
   if(a==="login-book"){needLogin({hash:"find",ride:r&&r.id},"Log in or create an account to request a seat. You’ll come straight back to this ride.");return;}
   if(a==="use-price"){const o=readOffer();if(o.suggested!=null){$("#o-price").value=o.suggested;updateOffer();}return;}
   if(a==="offer-this"){
@@ -1158,7 +1351,7 @@ async function act(a,el){
   }
   if(a==="logout"){
     try{await api("POST","/api/auth",{action:"logout"});}catch(x){toast(x.message,5000);return;}
-    S.user=null;S.bookings=[];S.rides.forEach(x=>{x.mine=false;});S.authMode="login";S.authMsg="";clearCache();
+    S.user=null;S.bookings=[];S.convs=[];S.chat={id:null,msgs:[],loaded:false,err:""};OF.qr=undefined;S.rides.forEach(x=>{x.mine=false;});S.authMode="login";S.authMsg="";clearCache();
     renderAll();toast("You’re logged out");load().then(renderAll);return;
   }
   if(!ready()||S.busy)return;
@@ -1184,6 +1377,189 @@ async function act(a,el){
   S.busy=false;renderAll();
 }
 
+/* ---------- messages: one chat per ride and passenger, with text and voice ---------- */
+const hm=t=>{const d=new Date(t);return pad(d.getHours())+":"+pad(d.getMinutes());};
+const fmtSec=s=>{s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+":"+pad(s%60);};
+function dayName(t){const d=new Date(t),n=new Date(),y=new Date();y.setDate(y.getDate()-1);
+  if(d.toDateString()===n.toDateString())return"Today";if(d.toDateString()===y.toDateString())return"Yesterday";
+  return d.toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"});}
+const ago=t=>{const d=dayName(t);return d==="Today"?hm(t):d;};
+const rideLine=r=>r?r.from.split(",")[0]+" → "+r.to.split(",")[0]+" · "+shortDate(r.date)+" "+r.time:"";
+const unreadOf=c=>S.view==="chats"&&c.id===S.chatId?0:c.unread;
+function normMsg(d){const v=d.voice&&mediaPath(d.voice.url)?{url:mediaPath(d.voice.url),dur:clampInt(d.voice.dur,1,120)}:null;
+  return{id:str(d.id,64),mine:d.mine===true,text:str(d.text,1000),voice:v,at:Number(d.at)||0};}
+function chatMeta(id){
+  const c=S.convs.find(x=>x.id===id),rideId=String(id||"").split(".")[0],r=rideById(rideId);
+  const ride=r?{from:r.from,to:r.to,date:r.date,time:r.time,status:r.status}:(c?c.ride:null);
+  if(c)return{id,other:c.other,ride,rideId,role:c.role};
+  if(!S.user||!r)return null;
+  if(!r.mine&&id===r.id+"."+S.user.id)return{id,other:{name:r.driverName,photo:r.driverPhoto},ride,rideId,role:"passenger"};
+  const b=S.bookings.find(x=>x.conv===id);
+  if(r.mine&&b)return{id,other:{name:b.name,photo:b.photo},ride,rideId,role:"driver"};
+  return null;
+}
+
+function renderChats(){
+  const el=$("#chats-body");if(!el)return;
+  $("#v-chats").classList.toggle("open-thread",!!S.chatId);
+  if(!S.user){
+    if(el.dataset.k!=="out"){el.dataset.k="out";
+      el.innerHTML='<div class="page-head"><h1 class="h1">Messages</h1></div><div class="empty"><b>Log in to see your messages</b><span>Chat with drivers and riders, and send voice messages.</span><button type="button" class="btn primary" data-act="login">Log in or create an account</button></div>';}
+    return;
+  }
+  if(el.dataset.k!=="in"){el.dataset.k="in";
+    el.innerHTML='<div class="page-head"><h1 class="h1">Messages</h1><p class="lede">Chat with drivers and riders about pickup points, luggage or timing.</p></div>'
+      +'<div class="chat" id="chat"><nav class="clist" id="clist" aria-label="Chats"></nav><section class="thread" id="thread" aria-label="Conversation">'
+      +'<div class="th-head" id="th-head"></div><div class="msgs" id="msgs" aria-live="polite"></div>'
+      +'<form class="composer" id="composer" autocomplete="off"><div class="rec" id="rec" hidden><i></i><span id="rec-t">0:00</span><span>Recording… tap send when done</span></div>'
+      +'<textarea id="c-text" rows="1" maxlength="1000" placeholder="Message" aria-label="Message"></textarea>'
+      +'<button type="button" class="ib ghost" id="c-cancel" hidden aria-label="Cancel recording">'+ICON.x+"</button>"
+      +'<button type="button" class="ib" id="c-mic" aria-label="Record a voice message">'+ICON.mic+"</button>"
+      +'<button type="submit" class="ib" id="c-send" hidden aria-label="Send">'+ICON.send+"</button></form></section></div>";
+    wireComposer();
+  }
+  $("#chat").classList.toggle("open",!!S.chatId);
+  renderChatList();
+  renderThreadHead();
+  if(S.chat.id!==S.chatId){S.chat={id:S.chatId,msgs:[],loaded:false,err:""};renderMsgs();if(S.chatId)fetchThread(true);}
+  else if(S.chatId&&!S.chat.loaded&&!S.chatBusy)fetchThread(true);
+  composerMode();
+}
+function renderChatList(){
+  const el=$("#clist");if(!el)return;
+  const list=S.convs.slice(),meta=S.chatId?chatMeta(S.chatId):null;
+  if(S.chatId&&meta&&!list.some(c=>c.id===S.chatId))list.unshift({id:S.chatId,other:meta.other,ride:meta.ride,lastText:"New chat",lastAt:0,unread:0,lastMine:false});
+  el.innerHTML=list.length?list.map(c=>{const n=unreadOf(c);
+    return'<a class="citem'+(n?" unread":"")+'" href="#chat='+esc(c.id)+'"'+(c.id===S.chatId?' aria-current="true"':"")+">"+avatarHTML(c.other)
+      +'<span class="ct"><b>'+esc(c.other.name)+'</b><span class="rl">'+esc(rideLine(c.ride))+'</span><span class="last">'+(c.lastMine?"You: ":"")+esc(c.lastText)+"</span></span>"
+      +'<span class="side">'+(c.lastAt?"<time>"+esc(ago(c.lastAt))+"</time>":"")+(n?'<span class="badge" aria-label="'+n+' unread">'+n+"</span>":"")+"</span></a>";}).join("")
+    :'<p class="hint" style="padding:14px 16px">No chats yet. Open a ride and tap <b>Message</b> to ask the driver something.</p>';
+}
+function renderThreadHead(){
+  const th=$("#th-head"),comp=$("#composer");if(!th)return;
+  const meta=S.chatId?chatMeta(S.chatId):null;
+  const back='<button type="button" class="back" data-act="chat-back" aria-label="Back to chats">'+ICON.back+"</button>";
+  let html,k;
+  if(!S.chatId){html='<div class="tt"><b>Your chats</b><span>Pick a chat to read it</span></div>';comp.hidden=true;}
+  else if(!meta){html=back+'<div class="tt"><b>'+(S.mode==="loading"?"Loading…":"Chat")+"</b></div>";comp.hidden=S.mode!=="live";}
+  else{comp.hidden=false;
+    html=back+avatarHTML(meta.other)+'<div class="tt"><b>'+esc(meta.other.name)+"</b><span>"+esc((meta.role==="driver"?"Rider · ":"Driver · ")+rideLine(meta.ride))+"</span></div>"
+      +(rideById(meta.rideId)?'<button type="button" class="btn ghost sm" data-act="chat-ride" data-id="'+esc(meta.rideId)+'">View ride</button>':"");}
+  k=html;if(th.dataset.k!==k){th.dataset.k=k;th.innerHTML=html;}
+}
+function renderMsgs(scroll){
+  const el=$("#msgs");if(!el)return;
+  if(!S.chatId){el.innerHTML='<p class="hint">Pick a chat on the left to read it.</p>';return;}
+  const m=S.chat.msgs,meta=chatMeta(S.chatId);
+  if(S.chat.err){el.innerHTML='<p class="hint">'+esc(S.chat.err)+"</p>";return;}
+  if(!S.chat.loaded&&!m.length){el.innerHTML='<p class="loading">Loading messages…</p>';return;}
+  if(!m.length){el.innerHTML='<p class="hint">Say hello to '+esc(first(meta?meta.other.name:""))+". Ask about the pickup point, luggage or timing, or tap the mic to send a voice message.</p>";return;}
+  const near=scroll||(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-200);
+  let h="",day="";
+  m.forEach(x=>{const d=dayName(x.at);if(d!==day){day=d;h+='<div class="dayline">'+esc(d)+"</div>";}
+    h+='<div class="bub '+(x.mine?"me":"them")+(x.pending?" pending":"")+'">'+(x.voice&&x.voice.url?voiceHTML(x):x.voice?"Voice message ("+fmtSec(x.voice.dur)+")":esc(x.text))
+      +"<time>"+(x.pending?"Sending…":hm(x.at))+"</time></div>";});
+  el.innerHTML=h;paintAudio();
+  if(near)requestAnimationFrame(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+}
+function voiceHTML(x){return'<span class="voice" data-id="'+esc(x.id)+'" data-src="'+esc(x.voice.url)+'" data-dur="'+x.voice.dur+'"><button type="button" data-act="play" data-id="'+esc(x.id)+'" aria-label="Play voice message, '+fmtSec(x.voice.dur)+'">'+ICON.play
+  +'</button><span class="vbar"><i></i></span><span class="vt">'+fmtSec(x.voice.dur)+"</span></span>";}
+async function fetchThread(full){
+  const id=S.chatId;if(!id||!S.user||S.chatBusy||!ready())return;
+  const done=S.chat.msgs.filter(m=>!m.pending),since=full||!done.length?0:done[done.length-1].at;
+  S.chatBusy=true;
+  try{
+    const d=await api("GET","/api/messages?conv="+encodeURIComponent(id)+"&since="+since);
+    if(S.chatId!==id||S.chat.id!==id)return;
+    const seen=new Set(S.chat.msgs.map(m=>m.id)),add=(d.messages||[]).map(normMsg).filter(m=>!seen.has(m.id));
+    const firstLoad=!S.chat.loaded;S.chat.loaded=true;S.chat.err="";
+    if(add.length)S.chat.msgs=S.chat.msgs.filter(m=>!m.pending).concat(add).concat(S.chat.msgs.filter(m=>m.pending));
+    if(add.length||firstLoad)renderMsgs(firstLoad);
+    const c=S.convs.find(x=>x.id===id);if(c&&c.unread){c.unread=0;renderAccount();renderChatList();}
+  }catch(x){if(S.chatId===id&&!S.chat.loaded){S.chat.loaded=true;S.chat.err=x.code==="not_found"?"This chat isn’t available. It may belong to another account.":x.message;renderMsgs();}}
+  finally{S.chatBusy=false;}
+}
+function autosize(t){t.style.height="46px";t.style.height=Math.min(140,t.scrollHeight+3)+"px";}
+function composerMode(){
+  const t=$("#c-text");if(!t)return;const rec=!!REC.rec,has=!!t.value.trim();
+  $("#rec").hidden=!rec;t.hidden=rec;$("#c-cancel").hidden=!rec;$("#c-mic").hidden=rec||has;$("#c-send").hidden=!(rec||has);
+  $("#c-send").disabled=S.sending;$("#c-mic").disabled=S.sending;
+}
+function wireComposer(){
+  const f=$("#composer"),t=$("#c-text");
+  t.addEventListener("input",()=>{autosize(t);composerMode();});
+  t.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&matchMedia("(pointer:fine)").matches){e.preventDefault();f.requestSubmit();}});
+  f.addEventListener("submit",e=>{e.preventDefault();if(REC.rec)stopRec(true);else sendText();});
+  $("#c-mic").addEventListener("click",startRec);
+  $("#c-cancel").addEventListener("click",()=>stopRec(false));
+}
+let tmpN=0;
+function settle(tmp,raw){const m=normMsg(raw),i=S.chat.msgs.indexOf(tmp);if(i<0)return;if(S.chat.msgs.some(x=>x.id===m.id))S.chat.msgs.splice(i,1);else S.chat.msgs[i]=m;}
+async function sendText(){
+  const t=$("#c-text"),text=t.value.trim(),id=S.chatId;if(!text||S.sending||!id)return;
+  if(!ready())return toast("You’re offline. Connect to the internet to send messages.");
+  const tmp={id:"tmp"+(++tmpN),mine:true,text,voice:null,at:Date.now(),pending:true};
+  S.chat.msgs.push(tmp);S.chat.loaded=true;t.value="";autosize(t);S.sending=true;composerMode();renderMsgs(true);
+  try{const d=await api("POST","/api/messages",{conv:id,text});settle(tmp,d.message);}
+  catch(x){S.chat.msgs=S.chat.msgs.filter(m=>m!==tmp);if(!t.value)t.value=text;autosize(t);toast(x.message,5000);}
+  S.sending=false;composerMode();renderMsgs();load().then(renderAll);
+}
+/* voice messages: tap the mic, tap send (or cancel); up to 60 seconds */
+const REC={rec:null,chunks:[],start:0,timer:null,stream:null,chat:null};
+async function startRec(){
+  if(REC.rec||S.sending)return;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder)return toast("This browser can’t record voice messages.",5000);
+  if(!ready())return toast("You’re offline. Connect to the internet to send messages.");
+  let stream;
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:true});}
+  catch(e){return toast(e&&e.name==="NotAllowedError"?"Microphone access is blocked. Allow it for this site in your browser settings.":"Couldn’t start the microphone.",6000);}
+  const type=["audio/webm;codecs=opus","audio/mp4","audio/ogg;codecs=opus","audio/webm"].find(x=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(x));
+  let rec;try{rec=new MediaRecorder(stream,Object.assign({audioBitsPerSecond:32000},type?{mimeType:type}:{}));}catch(_){rec=new MediaRecorder(stream);}
+  REC.rec=rec;REC.stream=stream;REC.chunks=[];REC.chat=S.chatId;
+  rec.ondataavailable=e=>{if(e.data&&e.data.size)REC.chunks.push(e.data);};
+  rec.start(250);REC.start=Date.now();
+  const el=$("#rec-t");if(el)el.textContent="0:00";
+  REC.timer=setInterval(()=>{const s=(Date.now()-REC.start)/1000,t=$("#rec-t");if(t)t.textContent=fmtSec(s);if(s>=60)stopRec(true);},250);
+  composerMode();
+}
+function stopRec(send){
+  const rec=REC.rec;if(!rec)return;
+  REC.rec=null;clearInterval(REC.timer);
+  const dur=Math.max(1,Math.round((Date.now()-REC.start)/1000)),chat=REC.chat,stream=REC.stream,chunks=REC.chunks;
+  rec.onstop=()=>{stream.getTracks().forEach(t=>t.stop());
+    const blob=new Blob(chunks,{type:(rec.mimeType||"audio/webm")});
+    if(send&&chat===S.chatId)sendVoice(blob,dur);};
+  try{rec.stop();}catch(_){stream.getTracks().forEach(t=>t.stop());}
+  composerMode();
+}
+async function sendVoice(blob,dur){
+  if(blob.size<300)return toast("That recording was too short.");
+  if(blob.size>580000)return toast("That voice message is too long. Keep it under a minute.",5000);
+  const id=S.chatId,tmp={id:"tmp"+(++tmpN),mine:true,text:"",voice:{url:"",dur},at:Date.now(),pending:true};
+  S.chat.msgs.push(tmp);S.chat.loaded=true;S.sending=true;composerMode();renderMsgs(true);
+  try{
+    const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error("Couldn’t read the recording."));r.readAsDataURL(blob);});
+    const d=await api("POST","/api/messages",{conv:id,voice:{data,dur}});settle(tmp,d.message);
+  }catch(x){S.chat.msgs=S.chat.msgs.filter(m=>m!==tmp);toast(x.message,5000);}
+  S.sending=false;composerMode();renderMsgs();load().then(renderAll);
+}
+/* one shared player for voice messages */
+const AUD=new Audio();let audId=null;
+AUD.preload="none";
+AUD.addEventListener("timeupdate",paintAudio);AUD.addEventListener("pause",paintAudio);AUD.addEventListener("play",paintAudio);
+AUD.addEventListener("ended",()=>{audId=null;paintAudio();});
+function toggleAudio(id){
+  const v=document.querySelector('.voice[data-id="'+id+'"]');if(!v)return;
+  if(audId===id&&!AUD.paused){AUD.pause();return;}
+  if(audId!==id){AUD.src=v.dataset.src;audId=id;}
+  AUD.play().catch(()=>{toast("Couldn’t play this voice message.");audId=null;paintAudio();});
+  paintAudio();
+}
+function paintAudio(){document.querySelectorAll(".voice").forEach(v=>{
+  const on=v.dataset.id===audId,playing=on&&!AUD.paused,dur=Number(v.dataset.dur)||1,b=v.querySelector("button"),want=playing?"pause":"play";
+  if(b.dataset.s!==want){b.dataset.s=want;b.innerHTML=ICON[want];b.setAttribute("aria-label",(playing?"Pause":"Play")+" voice message, "+fmtSec(dur));}
+  const t=on?AUD.currentTime:0;v.querySelector(".vbar i").style.width=Math.min(100,t/dur*100)+"%";v.querySelector(".vt").textContent=on&&t>0?fmtSec(t):fmtSec(dur);});}
+
 /* ---------- notice, views, render ---------- */
 function renderNotice(){
   let m="";
@@ -1192,23 +1568,26 @@ function renderNotice(){
   else if(S.err)m="Can’t reach the ride board right now. Showing the rides already loaded.";
   const n=$("#notice");n.textContent=m;n.hidden=!m;
 }
-const VIEWS=["find","offer","trips","profile"];
+const VIEWS=["find","offer","trips","chats","profile"];
 function showView(){
-  let h=(location.hash||"").replace(/^#/,"");
+  let h=(location.hash||"").replace(/^#/,""),chat=null;
   if(h.startsWith("reset=")){S.resetToken=h.slice(6);S.authMode="reset";S.authMsg="";h="profile";}
-  const v=VIEWS.includes(h)?h:"find",changed=v!==S.view;S.view=v;
+  if(h.startsWith("chat=")){chat=h.slice(5,145);h="chats";}
+  const v=VIEWS.includes(h)?h:"find",changed=v!==S.view||chat!==S.chatId;
+  if(REC.rec&&(v!=="chats"||chat!==S.chatId))stopRec(false);
+  if(!AUD.paused&&(v!=="chats"||chat!==S.chatId))AUD.pause();
+  S.view=v;S.chatId=v==="chats"?chat:null;
   VIEWS.forEach(x=>{$("#v-"+x).hidden=x!==v;});
   document.querySelectorAll(".tabs a").forEach(a=>{if(a.dataset.view===v)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});
   closeSheet();
   if(v==="profile")renderProfile(true);
   if(changed)window.scrollTo(0,0);
+  if(v==="chats"){renderChats();renderAccount();if(S.chatId&&S.chat.loaded)renderMsgs(true);}
 }
-function renderAll(){renderNotice();renderAccount();renderFind();renderTrips();updateOffer();renderProfile();renderSheet();}
+function renderAll(){renderNotice();renderAccount();renderFind();renderTrips();updateOffer();renderProfile();renderChats();renderSheet();}
 let tt;function toast(msg,ms){const t=$("#toast");t.textContent=msg;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),ms||3200);}
 
 /* ---------- wiring ---------- */
-const POP=[["Delhi","Jaipur"],["Noida","Agra"],["Gurugram","Chandigarh"],["Noida Sector 62","Connaught Place"],["Bengaluru","Mysuru"],["Mumbai","Pune"]];
-$("#popular").insertAdjacentHTML("beforeend",POP.map(p=>'<button type="button" class="chip" data-from="'+esc(p[0])+'" data-to="'+esc(p[1])+'">'+esc(p[0])+" → "+esc(p[1])+"</button>").join(""));
 ["s-from","s-to","o-from","o-to"].forEach(id=>attachPlace($("#"+id)));
 document.querySelectorAll("[data-locate]").forEach(b=>b.addEventListener("click",()=>locateInto($("#"+b.dataset.locate),b)));
 function readSearch(){const sf=$("#s-from"),stt=$("#s-to");
@@ -1221,7 +1600,6 @@ $("#search").addEventListener("placechange",e=>{
 });
 document.querySelectorAll('input[name="s-veh"]').forEach(i=>i.addEventListener("change",()=>{readSearch();renderFind();}));
 $("#s-swap").addEventListener("click",()=>{const a=$("#s-from"),b=$("#s-to"),av=a.value,ap=a.value?ptOf(a):null;setPlace(a,b.value,b.value?ptOf(b):null);setPlace(b,av,ap);});
-$("#popular").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;setPlace($("#s-from"),b.dataset.from,placePt(b.dataset.from));setPlace($("#s-to"),b.dataset.to,placePt(b.dataset.to));$("#s-date").value="";readSearch();renderFind();});
 $("#r-clear").addEventListener("click",()=>{$("#search").reset();["s-from","s-to"].forEach(id=>setPlace($("#"+id),"",null));readSearch();renderFind();});
 $("#r-sort").addEventListener("change",async e=>{
   S.sort=e.target.value;
@@ -1246,6 +1624,11 @@ $("#profile-body").addEventListener("input",e=>{
   if(e.target.id==="pf-bio"&&$("#pf-count"))$("#pf-count").textContent=e.target.value.length+" / 200";
   const f=e.target.closest("form");if(f){const er=f.querySelector(".err");if(er&&!er.hidden)showErr(er,"");}
 });
+document.addEventListener("change",async e=>{
+  const t=e.target;if(!t.files||!t.files[0])return;const f=t.files[0];t.value="";
+  if(t.id==="pf-photo-file")uploadPhoto(f);
+  else if(t.id==="o-qr-file"){try{OF.qr={data:await readImage(f,900,false)};renderQrPick();updateOffer();}catch(x){toast(x.message,5000);}}
+});
 window.addEventListener("hashchange",()=>{
   showView();
   const id=S.pendingOpen;S.pendingOpen=null;if(id&&rideById(id))openRide(id);
@@ -1257,6 +1640,7 @@ loadCache();showView();readSearch();renderAll();
   await load();renderAll();
   const refresh=async()=>{if(S.mode==="live"&&!document.hidden&&!S.busy){await load();renderAll();}};
   setInterval(refresh,20000);
+  setInterval(()=>{if(S.view==="chats"&&S.chatId&&!document.hidden)fetchThread(false);},4000);
   document.addEventListener("visibilitychange",refresh);
   window.addEventListener("online",async()=>{if(S.mode==="offline"||S.err){await load();renderAll();}});
   window.addEventListener("offline",()=>{if(S.mode==="live"){S.mode="offline";renderAll();}});
