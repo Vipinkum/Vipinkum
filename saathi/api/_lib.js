@@ -14,6 +14,7 @@ const EMAILS = "saathi:emails";
 const MEDIA = "saathi:media"; // photos, payment QR codes and voice notes, read one at a time
 const CONVS = "saathi:convs"; // one row per chat: a ride plus one passenger
 const msgKind = (conv) => "saathi:msg:" + conv; // messages of one chat
+const LOCS = "saathi:loc"; // latest live location per ride, only while the driver shares it
 const MAX_RIDES = 2000;
 
 const hasStore = () => !!BACKEND;
@@ -208,10 +209,11 @@ function smtp() {
 const escH = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 async function sendMail(to, subject, lines, link) {
   if (!mailOn() || !to) return false;
-  const text = lines.join("\n\n") + (link ? "\n\nOpen Saathi: " + link.url : "");
+  // A line is plain text, or {text, url} for a link.
+  const text = lines.map((l) => (typeof l === "string" ? l : l.text + ": " + l.url)).join("\n\n") + (link ? "\n\nOpen Saathi: " + link.url : "");
   const html = '<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.5;color:#0f1a14;max-width:520px">' +
     '<p style="font-size:20px;font-weight:700;color:#0b7a4b;margin:0 0 16px">saathi</p>' +
-    lines.map((l) => "<p>" + escH(l) + "</p>").join("") +
+    lines.map((l) => (typeof l === "string" ? "<p>" + escH(l) + "</p>" : '<p><a href="' + escH(l.url) + '" style="color:#0b7a4b;font-weight:600">' + escH(l.text) + "</a></p>")).join("") +
     (link ? '<p><a href="' + escH(link.url) + '" style="display:inline-block;background:#0b7a4b;color:#fff;padding:10px 18px;border-radius:10px;text-decoration:none;font-weight:700">' + escH(link.label) + "</a></p>" : "") +
     '<p style="color:#56675e;font-size:13px">You get these emails because you use Saathi.</p></div>';
   try {
@@ -236,6 +238,22 @@ function siteUrl(req) {
   const host = req.headers["x-forwarded-host"] || req.headers.host || "";
   const proto = req.headers["x-forwarded-proto"] || (/^localhost|^127\./.test(host) ? "http" : "https");
   return host ? proto + "://" + host : "";
+}
+
+/* ---------- places ---------- */
+function kmBetween(a, b) {
+  const R = 6371, r = (x) => (x * Math.PI) / 180;
+  const dLa = r(b[0] - a[0]), dLo = r(b[1] - a[1]);
+  const s = Math.sin(dLa / 2) ** 2 + Math.cos(r(a[0])) * Math.cos(r(b[0])) * Math.sin(dLo / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+const ridePt = (r, end) => (Number.isFinite(r[end + "Lat"]) && Number.isFinite(r[end + "Lon"]) ? [r[end + "Lat"], r[end + "Lon"]] : null);
+const placeHead = (s) => String(s || "").split(",")[0].trim().toLowerCase();
+// Same place: within 25 km when both have coordinates, otherwise the same first part of the name.
+function samePlace(a, b, end) {
+  const pa = ridePt(a, end), pb = ridePt(b, end);
+  if (pa && pb) return kmBetween(pa, pb) <= 25;
+  return placeHead(a[end]) === placeHead(b[end]);
 }
 
 /* ---------- request helpers ---------- */
@@ -284,7 +302,7 @@ async function requireUser(req, res) {
 }
 
 module.exports = {
-  RIDES, BOOKINGS, USERS, EMAILS, MEDIA, CONVS, msgKind, MAX_RIDES, BACKEND, hasStore, all, get, put, putNew, del, count, loadAll,
+  RIDES, BOOKINGS, USERS, EMAILS, MEDIA, CONVS, LOCS, msgKind, kmBetween, samePlace, MAX_RIDES, BACKEND, hasStore, all, get, put, putNew, del, count, loadAll,
   setSession, clearSession, currentUser, hashPassword, checkPassword, publicUser, mediaUrl, parseDataUrl, normPhone, normEmail,
   mailOn, sendMail, siteUrl, str, text, int, newId, utcDay, queryId, queryParam, send, fail, readBody, jsonOnly, requireUser,
 };

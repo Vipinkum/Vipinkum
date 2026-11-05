@@ -35,6 +35,28 @@ function validate(b) {
 }
 
 const tripLine = (r) => r.from + " to " + r.to + ", " + r.date + " at " + r.time;
+const niceDate = (d) => new Date(d + "T00:00:00Z").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+const dayNum = (d) => Math.round(Date.parse(d + "T00:00:00Z") / 86400000);
+const minutes = (r) => dayNum(r.date) * 1440 + Number(r.time.slice(0, 2)) * 60 + Number(r.time.slice(3, 5));
+
+// Up to 3 open rides on the same route, the same day or a day either side, with enough free seats.
+function alternatives(ride, rides, bookings, seats, passenger) {
+  const taken = new Map(), mine = new Set();
+  for (const b of bookings) {
+    const s = b.status || "pending";
+    if (s === "confirmed") taken.set(b.rideId, (taken.get(b.rideId) || 0) + (b.seats || 0));
+    if (b.uid === passenger.id && (s === "pending" || s === "confirmed")) mine.add(b.rideId);
+  }
+  const today = L.utcDay(-1);
+  return rides
+    .filter((x) => x.id !== ride.id && x.status === "open" && x.date >= today && Math.abs(dayNum(x.date) - dayNum(ride.date)) <= 1)
+    .filter((x) => x.driverUid !== ride.driverUid && x.driverUid !== passenger.id && !mine.has(x.id))
+    .filter((x) => !x.womenOnly || passenger.gender === "female")
+    .map((x) => Object.assign({}, x, { left: x.seats - (taken.get(x.id) || 0) }))
+    .filter((x) => x.left >= seats && L.samePlace(x, ride, "from") && L.samePlace(x, ride, "to"))
+    .sort((a, b) => Math.abs(minutes(a) - minutes(ride)) - Math.abs(minutes(b) - minutes(ride)))
+    .slice(0, 3);
+}
 
 module.exports = async (req, res) => {
   const user = await L.requireUser(req, res).catch(() => { L.fail(res, 502, "store_unreachable", "Couldn't reach the server just now."); return null; });
@@ -68,18 +90,32 @@ module.exports = async (req, res) => {
       ride.status = "cancelled";
       ride.cancelledAt = Date.now();
       await L.put(L.RIDES, id, ride);
-      // Let everyone who asked for a seat know.
+      await L.del(L.LOCS, id).catch(() => {});
+      // Tell everyone who asked for a seat, with other rides on the same route that still have room.
       if (L.mailOn()) {
-        const [bookings, users] = await Promise.all([L.all(L.BOOKINGS), L.all(L.USERS)]);
+        const [rides, bookings, users] = await Promise.all([L.all(L.RIDES), L.all(L.BOOKINGS), L.all(L.USERS)]);
         const byId = new Map(users.map((u) => [u.id, u]));
+        const site = L.siteUrl(req);
         const notify = bookings.filter((b) => b.rideId === id && ["pending", "confirmed"].includes(b.status || "pending"));
         await Promise.all(notify.map((b) => {
           const p = byId.get(b.uid);
-          return p && L.sendMail(p.email, "Ride cancelled: " + ride.from + " to " + ride.to, [
+          if (!p) return null;
+          const alts = alternatives(ride, rides, bookings, b.seats || 1, p);
+          const lines = [
             "Hi " + p.name + ",",
             user.name + " cancelled the ride " + tripLine(ride) + ". Your seat request is closed and nothing is owed.",
-            "Other rides on this route may still have seats.",
-          ], { url: L.siteUrl(req) + "/#find", label: "Find another ride" });
+          ];
+          if (alts.length) {
+            lines.push(alts.length === 1 ? "This ride on the same route still has room:" : "These rides on the same route still have room:");
+            alts.forEach((a) => {
+              const d = byId.get(a.driverUid);
+              lines.push({ text: a.time + " on " + niceDate(a.date) + ", " + a.from + " to " + a.to + " with " + (d ? d.name : "a driver") + ", ₹" + a.price + (a.vehicle === "bike" ? "" : " per seat") + ", " + a.left + (a.left === 1 ? " seat" : " seats") + " left", url: site + "/#ride=" + a.id });
+            });
+          } else {
+            lines.push("No other ride on this route has free seats right now. New rides are posted all the time, so check Saathi again soon.");
+          }
+          return L.sendMail(p.email, "Ride cancelled: " + ride.from + " to " + ride.to + (alts.length ? " (other rides found)" : ""), lines,
+            { url: site + "/#find", label: "Find another ride" });
         }));
       }
       return L.send(res, 200, { ride });

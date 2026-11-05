@@ -12,7 +12,13 @@ module.exports = async (req, res) => {
   try {
     const [{ rides, bookings, users }, sessionUser] = await Promise.all([L.loadAll(), L.currentUser(req)]);
     const me = sessionUser ? sessionUser.id : null;
-    const convs = me ? (await L.all(L.CONVS)).filter((c) => c.passenger === me || c.driver === me) : [];
+    const [convs, locs] = me ? await Promise.all([
+      L.all(L.CONVS).then((all) => all.filter((c) => c.passenger === me || c.driver === me)),
+      L.all(L.LOCS),
+    ]) : [[], []];
+    const now = Date.now();
+    const liveRides = new Set(locs.filter((l) => l.active && now - l.at < 3 * 60000).map((l) => l.rideId));
+    const myConfirmed = new Set(bookings.filter((b) => b.uid === me && b.status === "confirmed").map((b) => b.rideId));
     const userById = new Map(users.map((u) => [u.id, u]));
     const since = L.utcDay(-45);
 
@@ -43,6 +49,8 @@ module.exports = async (req, res) => {
         mine: !!me && r.driverUid === me,
       });
       if (out.mine) { out.requested = c.requested; out.qr = L.mediaUrl(r.qr); } else delete out.qr;
+      // Whether the driver is sharing live location right now, only for the driver and confirmed riders.
+      if (out.mine || myConfirmed.has(r.id)) out.live = liveRides.has(r.id);
       delete out.driverUid;
       return out;
     });
