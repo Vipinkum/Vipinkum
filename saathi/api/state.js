@@ -1,6 +1,6 @@
-// GET /api/state: the signed-in user, every ride, and the bookings that user may see.
+// GET /api/state: the signed-in user, every ride, the bookings and chats that user may see.
 // Everyone sees how many seats are confirmed on a ride. Names are only shared between a
-// passenger and that ride's driver, and phone numbers only once the driver confirms.
+// passenger and that ride's driver; phone numbers and the payment QR only once the driver confirms.
 const L = require("./_lib");
 
 const ACTIVE = ["pending", "confirmed"];
@@ -10,10 +10,10 @@ module.exports = async (req, res) => {
   if (req.method !== "GET") return L.fail(res, 405, "method", "Use GET.");
   if (!L.hasStore()) return L.fail(res, 503, "no_store", "Saathi isn't connected to its database yet.");
   try {
-    const { rides, bookings, users } = await L.loadAll();
-    const userById = new Map(users.map((u) => [u.id, u]));
-    const sessionUser = await L.currentUser(req);
+    const [{ rides, bookings, users }, sessionUser] = await Promise.all([L.loadAll(), L.currentUser(req)]);
     const me = sessionUser ? sessionUser.id : null;
+    const convs = me ? (await L.all(L.CONVS)).filter((c) => c.passenger === me || c.driver === me) : [];
+    const userById = new Map(users.map((u) => [u.id, u]));
     const since = L.utcDay(-45);
 
     const rideById = new Map(rides.map((r) => [r.id, r]));
@@ -35,12 +35,14 @@ module.exports = async (req, res) => {
       const out = Object.assign({}, r, {
         driverName: d ? d.name : r.driverName || "Driver",
         driverBio: d ? d.bio || "" : "",
+        driverPhoto: d ? L.mediaUrl(d.photo) : "",
         driverSince: d ? d.createdAt : null,
         driverRides: ridesOffered.get(r.driverUid) || 0,
         taken: c.taken,
+        hasQr: !!r.qr,
         mine: !!me && r.driverUid === me,
       });
-      if (out.mine) out.requested = c.requested;
+      if (out.mine) { out.requested = c.requested; out.qr = L.mediaUrl(r.qr); } else delete out.qr;
       delete out.driverUid;
       return out;
     });
@@ -57,8 +59,9 @@ module.exports = async (req, res) => {
         const passenger = userById.get(b.uid);
         const o = {
           id: b.id, rideId: b.rideId, seats: b.seats, status, createdAt: b.createdAt, decidedAt: b.decidedAt || null,
-          message: b.message || "", mine: asPassenger,
+          message: b.message || "", mine: asPassenger, conv: b.rideId + "." + b.uid,
           name: passenger ? passenger.name : b.name || "Passenger",
+          photo: passenger ? L.mediaUrl(passenger.photo) : "",
         };
         if (asDriver && passenger) {
           o.gender = passenger.gender || "";
@@ -67,12 +70,26 @@ module.exports = async (req, res) => {
         if (asPassenger && status === "confirmed") {
           const d = userById.get(ride.driverUid);
           o.driverPhone = d ? d.phone || "" : "";
+          o.qr = L.mediaUrl(ride.qr);
         }
         outBookings.push(o);
       }
     }
 
-    L.send(res, 200, { me: L.publicUser(sessionUser), features: { email: L.mailOn() }, rides: outRides, bookings: outBookings });
+    const outConvs = convs.map((c) => {
+      const role = c.driver === me ? "driver" : "passenger";
+      const other = userById.get(role === "driver" ? c.passenger : c.driver);
+      const r = rideById.get(c.rideId);
+      return {
+        id: c.id, rideId: c.rideId, role,
+        other: { name: other ? other.name : "Saathi member", photo: other ? L.mediaUrl(other.photo) : "" },
+        ride: r ? { from: r.from, to: r.to, date: r.date, time: r.time, status: r.status } : null,
+        lastText: c.lastText || "", lastAt: c.lastAt || c.createdAt || 0, lastMine: c.lastFrom === me,
+        unread: (c.unread && c.unread[me]) || 0,
+      };
+    }).sort((a, b) => b.lastAt - a.lastAt);
+
+    L.send(res, 200, { me: L.publicUser(sessionUser), features: { email: L.mailOn() }, rides: outRides, bookings: outBookings, convs: outConvs });
   } catch (e) {
     L.fail(res, 502, "store_unreachable", "The ride board can't be reached right now.");
   }

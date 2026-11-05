@@ -11,6 +11,9 @@ const RIDES = "saathi:rides";
 const BOOKINGS = "saathi:bookings";
 const USERS = "saathi:users";
 const EMAILS = "saathi:emails";
+const MEDIA = "saathi:media"; // photos, payment QR codes and voice notes, read one at a time
+const CONVS = "saathi:convs"; // one row per chat: a ride plus one passenger
+const msgKind = (conv) => "saathi:msg:" + conv; // messages of one chat
 const MAX_RIDES = 2000;
 
 const hasStore = () => !!BACKEND;
@@ -143,7 +146,37 @@ function checkPassword(pw, user) {
   const { hash } = hashPassword(pw, user.salt);
   return crypto.timingSafeEqual(Buffer.from(hash, "hex"), Buffer.from(user.hash, "hex"));
 }
-const publicUser = (u) => u && { id: u.id, name: u.name, email: u.email, phone: u.phone || "", gender: u.gender || "", bio: u.bio || "", createdAt: u.createdAt };
+const mediaUrl = (id) => (id ? "/api/media?id=" + id : "");
+// Only ever sent to the user themself.
+const publicUser = (u) => u && {
+  id: u.id, name: u.name, email: u.email, phone: u.phone || "", gender: u.gender || "", bio: u.bio || "", createdAt: u.createdAt,
+  photo: mediaUrl(u.photo), qr: mediaUrl(u.qr), qrId: u.qr || "", altName: u.altName || "", altPhone: u.altPhone || "",
+};
+
+/* ---------- uploaded files (sent as data: URLs inside JSON) ---------- */
+const MAGIC = {
+  "image/jpeg": (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff,
+  "image/png": (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47,
+  "image/webp": (b) => b.toString("latin1", 0, 4) === "RIFF" && b.toString("latin1", 8, 12) === "WEBP",
+  "audio/webm": (b) => b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3,
+  "audio/ogg": (b) => b.toString("latin1", 0, 4) === "OggS",
+  "audio/mp4": (b) => b.toString("latin1", 4, 8) === "ftyp",
+  "audio/x-m4a": (b) => b.toString("latin1", 4, 8) === "ftyp",
+  "audio/aac": (b) => b[0] === 0xff && (b[1] & 0xf6) === 0xf0,
+  "audio/mpeg": (b) => b.toString("latin1", 0, 3) === "ID3" || (b[0] === 0xff && (b[1] & 0xe0) === 0xe0),
+};
+// Returns [{mime, b64, size}, null] or [null, reason]. Checks the real file signature, not just the label.
+function parseDataUrl(v, prefix, maxBytes) {
+  const m = /^data:([a-z]+\/[a-z0-9.+-]+)((?:;[a-z0-9-]+=[^;,]*)*);base64,([A-Za-z0-9+/]+=*)$/i.exec(typeof v === "string" ? v : "");
+  if (!m) return [null, "bad"];
+  const mime = m[1].toLowerCase();
+  const check = MAGIC[mime];
+  if (!mime.startsWith(prefix) || !check) return [null, "type"];
+  if (m[3].length * 0.75 > maxBytes + 4) return [null, "size"];
+  const buf = Buffer.from(m[3], "base64");
+  if (buf.length < 12 || !check(buf)) return [null, "type"];
+  return [{ mime, b64: m[3], size: buf.length }, null];
+}
 // Indian mobile numbers: keep 10 digits, stored as +91XXXXXXXXXX.
 function normPhone(v) {
   const d = String(v || "").replace(/\D/g, "").replace(/^(91|0)(?=\d{10}$)/, "");
@@ -222,13 +255,15 @@ function send(res, code, body) {
 }
 const fail = (res, code, error, message) => send(res, code, { error, message });
 
-async function readBody(req) {
+// Returns the parsed JSON body, or {_tooLarge: true} when it's over the limit.
+async function readBody(req, limit) {
+  limit = limit || 100000;
   if (req.body && typeof req.body === "object") return req.body;
-  if (typeof req.body === "string") { try { return JSON.parse(req.body); } catch (_) { return {}; } }
+  if (typeof req.body === "string") { if (req.body.length > limit) return { _tooLarge: true }; try { return JSON.parse(req.body); } catch (_) { return {}; } }
   return new Promise((resolve) => {
-    let d = "";
-    req.on("data", (c) => { d += c; if (d.length > 100000) req.destroy(); });
-    req.on("end", () => { try { resolve(JSON.parse(d || "{}")); } catch (_) { resolve({}); } });
+    const parts = []; let n = 0, big = false;
+    req.on("data", (c) => { n += c.length; if (n > limit) big = true; else parts.push(c); });
+    req.on("end", () => { if (big) return resolve({ _tooLarge: true }); try { resolve(JSON.parse(Buffer.concat(parts).toString("utf8") || "{}")); } catch (_) { resolve({}); } });
     req.on("error", () => resolve({}));
   });
 }
@@ -249,7 +284,7 @@ async function requireUser(req, res) {
 }
 
 module.exports = {
-  RIDES, BOOKINGS, USERS, EMAILS, MAX_RIDES, BACKEND, hasStore, all, get, put, putNew, del, count, loadAll,
-  setSession, clearSession, currentUser, hashPassword, checkPassword, publicUser, normPhone, normEmail,
+  RIDES, BOOKINGS, USERS, EMAILS, MEDIA, CONVS, msgKind, MAX_RIDES, BACKEND, hasStore, all, get, put, putNew, del, count, loadAll,
+  setSession, clearSession, currentUser, hashPassword, checkPassword, publicUser, mediaUrl, parseDataUrl, normPhone, normEmail,
   mailOn, sendMail, siteUrl, str, text, int, newId, utcDay, queryId, queryParam, send, fail, readBody, jsonOnly, requireUser,
 };

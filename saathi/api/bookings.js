@@ -76,13 +76,16 @@ module.exports = async (req, res) => {
         booking.decidedAt = Date.now();
         await L.put(L.BOOKINGS, id, booking);
         if (passenger) {
+          const share = "Saathi trip: " + passenger.name + " is riding with " + user.name + " (" + user.phone + ") from " + tripLine(ride) +
+            ". Vehicle: " + (ride.vehicleName || (ride.vehicle === "bike" ? "bike" : "car")) + ". Seats: " + booking.seats + ".";
           emailed = await L.sendMail(passenger.email, "Confirmed: your seat from " + ride.from + " to " + ride.to, [
             "Hi " + passenger.name + ",",
             user.name + " confirmed your " + plural(booking.seats, "seat", "seats") + " on " + tripLine(ride) + ".",
-            "Pay ₹" + ride.price * booking.seats + " to the driver on the day" + (ride.price === 0 ? " (this ride is free)." : "."),
+            "Pay ₹" + ride.price * booking.seats + " to the driver" + (ride.price === 0 ? " (this ride is free)." : ride.qr ? ", in cash or by UPI with the QR code on the ride in Saathi." : " on the day."),
             "Driver's number: " + user.phone + ". WhatsApp: " + waLink(user.phone),
+            passenger.altPhone ? "Send these trip details to " + (passenger.altName || "your alternative number") + " on WhatsApp: " + waLink(passenger.altPhone, share) : "",
             "Agree on the exact pickup point before you leave.",
-          ], { url: site + "/#trips", label: "See your trip" });
+          ].filter(Boolean), { url: site + "/#trips", label: "See your trip" });
         }
       } else {
         booking.status = "declined";

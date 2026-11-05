@@ -41,13 +41,20 @@ module.exports = async (req, res) => {
   if (!user) return;
   try {
     if (req.method === "POST") {
-      const [ride, err] = validate(await L.readBody(req));
+      const body = await L.readBody(req);
+      const [ride, err] = validate(body);
       if (err) return L.fail(res, 400, "invalid", err);
       if (ride.womenOnly && user.gender !== "female") {
         return L.fail(res, 403, "women_only", "Women-only rides can be offered by women drivers. If that's you, set your gender in Profile.");
       }
       if (!user.phone) return L.fail(res, 400, "no_phone", "Add your mobile number in Profile so confirmed riders can reach you.");
       if ((await L.count(L.RIDES)) >= L.MAX_RIDES) return L.fail(res, 507, "full", "The ride board is full. Old rides need to be cleared before new ones can be added.");
+      const qrId = typeof body.qr === "string" ? body.qr.slice(0, 64) : "";
+      if (qrId) {
+        const qr = await L.get(L.MEDIA, qrId);
+        if (!qr || qr.type !== "qr" || qr.owner !== user.id) return L.fail(res, 400, "invalid", "That payment QR couldn't be found. Upload it again.");
+        ride.qr = qrId;
+      }
       const doc = Object.assign({ id: L.newId(), driverUid: user.id, driverName: user.name, status: "open", createdAt: Date.now() }, ride);
       await L.put(L.RIDES, doc.id, doc);
       return L.send(res, 201, { ride: doc });

@@ -31,6 +31,18 @@ function readProfile(b, base) {
   }
   if (b.gender !== undefined) out.gender = GENDERS.includes(b.gender) ? b.gender : "";
   if (b.bio !== undefined) out.bio = L.text(b.bio, 200);
+  // A family member or friend who can be sent the trip details once a seat is confirmed.
+  if (b.altPhone !== undefined) {
+    const raw = String(b.altPhone || "").trim();
+    if (!raw) out.altPhone = "";
+    else {
+      const alt = L.normPhone(raw);
+      if (!alt) return [null, "The alternative number needs to be a 10-digit Indian mobile number."];
+      if (alt === (out.phone || (base && base.phone))) return [null, "Use someone else's number as the alternative number, not your own."];
+      out.altPhone = alt;
+    }
+  }
+  if (b.altName !== undefined) out.altName = L.str(b.altName, 30);
   return [out, null];
 }
 
