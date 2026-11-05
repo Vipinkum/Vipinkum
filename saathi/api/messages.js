@@ -1,12 +1,15 @@
 // GET  /api/messages?conv=...&since=...     messages in a chat you're part of; marks them read
 // POST /api/messages {conv, text}            send a text message
 // POST /api/messages {conv, voice:{data,dur}} send a voice message (up to 2 minutes)
+// POST /api/messages {conv, file:{data,name}, text?} send a photo or PDF, with an optional caption
 // A chat is one ride plus one passenger: conv = "<rideId>.<passengerId>". A passenger can message the
 // driver of any ride; a driver can message anyone who asked for a seat on their ride.
 const L = require("./_lib");
 
 const MAX_MESSAGES = 500;
 const VOICE_BYTES = 600000;
+const FILE_LIMITS = { image: 1500000, pdf: 2200000 };
+const cleanName = (n) => String(n || "").replace(/[^\w .()\-]+/g, "_").replace(/\s+/g, " ").trim().slice(0, 80);
 
 function parseConv(id) {
   const m = /^([a-f0-9]{6,64})\.([a-f0-9]{6,64})$/.exec(String(id || ""));
@@ -22,7 +25,11 @@ async function access(user, convId) {
   if (user.id === ride.driverUid && p.passenger !== user.id) return { p, ride, role: "driver", other: p.passenger };
   return null;
 }
-const out = (m, me) => ({ id: m.id, mine: m.from === me, text: m.text || "", voice: m.voice ? { url: L.mediaUrl(m.voice.id), dur: m.voice.dur } : null, at: m.at });
+const out = (m, me) => ({
+  id: m.id, mine: m.from === me, text: m.text || "", at: m.at,
+  voice: m.voice ? { url: L.mediaUrl(m.voice.id), dur: m.voice.dur } : null,
+  file: m.file ? { url: L.mediaUrl(m.file.id), name: m.file.name, mime: m.file.mime, size: m.file.size } : null,
+});
 const tripLine = (r) => r.from + " to " + r.to + ", " + r.date + " at " + r.time;
 const fmtDur = (s) => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
 
@@ -47,8 +54,8 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === "POST") {
-      const b = await L.readBody(req, 1000000);
-      if (b._tooLarge) return L.fail(res, 413, "too_large", "That voice message is too long. Keep it under a minute.");
+      const b = await L.readBody(req, 3200000);
+      if (b._tooLarge) return L.fail(res, 413, "too_large", "That's too large to send. Photos and PDFs can be up to 2 MB.");
       const id = String(b.conv || "").slice(0, 140);
       const a = await access(user, id);
       if (!a) return L.fail(res, 404, "not_found", "That chat isn't available.");
@@ -60,7 +67,14 @@ module.exports = async (req, res) => {
         const dur = Math.round(Number(b.voice.dur));
         voice = { file, dur: dur >= 1 && dur <= 120 ? dur : 1 };
       }
-      if (!text && !voice) return L.fail(res, 400, "invalid", "Type a message or record a voice message.");
+      let file = null;
+      if (b.file) {
+        const [f, why] = L.parseDataUrl(b.file.data, ["image/", "application/pdf"], FILE_LIMITS.pdf);
+        if (!f) return L.fail(res, why === "size" ? 413 : 400, "invalid", why === "size" ? "That file is too large. Photos and PDFs can be up to 2 MB." : "You can send photos (JPG, PNG, WebP) and PDFs.");
+        if (f.mime.startsWith("image/") && f.size > FILE_LIMITS.image) return L.fail(res, 413, "invalid", "That photo is too large. Try a smaller one.");
+        file = { f, name: cleanName(b.file.name) || (f.mime === "application/pdf" ? "document.pdf" : "photo.jpg") };
+      }
+      if (!text && !voice && !file) return L.fail(res, 400, "invalid", "Type a message, record a voice message or attach a file.");
 
       let conv = await L.get(L.CONVS, id);
       if (!conv) {
@@ -78,6 +92,11 @@ module.exports = async (req, res) => {
         await L.put(L.MEDIA, media.id, media);
         msg.voice = { id: media.id, dur: voice.dur };
       }
+      if (file) {
+        const media = { id: L.newId(), type: "file", owner: user.id, conv: id, mime: file.f.mime, data: file.f.b64, size: file.f.size, name: file.name, createdAt: msg.at };
+        await L.put(L.MEDIA, media.id, media);
+        msg.file = { id: media.id, name: file.name, mime: file.f.mime, size: file.f.size };
+      }
       await L.put(L.msgKind(id), msg.id, msg);
 
       conv.unread = conv.unread || {};
@@ -86,7 +105,8 @@ module.exports = async (req, res) => {
       conv.unread[user.id] = 0;
       conv.lastAt = msg.at;
       conv.lastFrom = user.id;
-      conv.lastText = text ? text.slice(0, 140) : "Voice message (" + fmtDur(msg.voice.dur) + ")";
+      const what = msg.file ? (msg.file.mime === "application/pdf" ? "PDF: " + msg.file.name : "Photo") : msg.voice ? "Voice message (" + fmtDur(msg.voice.dur) + ")" : "";
+      conv.lastText = text ? (msg.file ? what + " · " : "") + text.slice(0, 140) : what;
       await L.put(L.CONVS, id, conv);
 
       // One email per batch of unread messages, so a busy chat doesn't flood anyone's inbox.
@@ -98,7 +118,7 @@ module.exports = async (req, res) => {
           emailed = await L.sendMail(other.email, "New message from " + user.name + " on Saathi", [
             "Hi " + other.name + ",",
             user.name + " sent you a message about the ride " + tripLine(a.ride) + ":",
-            text ? "“" + text.slice(0, 300) + "”" : "A voice message (" + fmtDur(msg.voice.dur) + ").",
+            text ? "“" + text.slice(0, 300) + "”" : what + ".",
           ], { url: L.siteUrl(req) + "/#chat=" + id, label: "Reply in Saathi" });
         }
       }

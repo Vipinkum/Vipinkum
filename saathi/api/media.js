@@ -16,7 +16,7 @@ async function canSee(doc, req) {
     const rideIds = new Set(rides.filter((r) => r.qr === doc.id && r.driverUid === doc.owner).map((r) => r.id));
     return bookings.some((b) => rideIds.has(b.rideId) && b.uid === me.id && b.status === "confirmed");
   }
-  if (doc.type === "voice") {
+  if (doc.type === "voice" || doc.type === "file") {
     const c = await L.get(L.CONVS, doc.conv);
     return !!c && (c.passenger === me.id || c.driver === me.id);
   }
@@ -31,6 +31,7 @@ function serve(req, res, doc) {
   res.setHeader("Accept-Ranges", "bytes");
   res.setHeader("Cache-Control", doc.type === "photo" ? "public, max-age=31536000, s-maxage=31536000, immutable" : "private, max-age=31536000, immutable");
   if (doc.type === "qr") res.setHeader("Content-Disposition", 'inline; filename="saathi-upi-qr.' + (doc.mime === "image/png" ? "png" : "jpg") + '"');
+  if (doc.type === "file") res.setHeader("Content-Disposition", (doc.mime === "application/pdf" ? "attachment" : "inline") + '; filename="' + String(doc.name || "file").replace(/[^\w .()\-]/g, "_") + '"');
   // Safari asks for audio in byte ranges.
   const m = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range || ""));
   if (m && (m[1] || m[2])) {

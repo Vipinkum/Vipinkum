@@ -151,7 +151,7 @@ const mediaUrl = (id) => (id ? "/api/media?id=" + id : "");
 // Only ever sent to the user themself.
 const publicUser = (u) => u && {
   id: u.id, name: u.name, email: u.email, phone: u.phone || "", gender: u.gender || "", bio: u.bio || "", createdAt: u.createdAt,
-  photo: mediaUrl(u.photo), qr: mediaUrl(u.qr), qrId: u.qr || "", altName: u.altName || "", altPhone: u.altPhone || "",
+  photo: mediaUrl(u.photo), qr: mediaUrl(u.qr), qrId: u.qr || "", upi: u.upi || "", altName: u.altName || "", altPhone: u.altPhone || "",
 };
 
 /* ---------- uploaded files (sent as data: URLs inside JSON) ---------- */
@@ -159,6 +159,7 @@ const MAGIC = {
   "image/jpeg": (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff,
   "image/png": (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47,
   "image/webp": (b) => b.toString("latin1", 0, 4) === "RIFF" && b.toString("latin1", 8, 12) === "WEBP",
+  "application/pdf": (b) => b.toString("latin1", 0, 5) === "%PDF-",
   "audio/webm": (b) => b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3,
   "audio/ogg": (b) => b.toString("latin1", 0, 4) === "OggS",
   "audio/mp4": (b) => b.toString("latin1", 4, 8) === "ftyp",
@@ -172,7 +173,8 @@ function parseDataUrl(v, prefix, maxBytes) {
   if (!m) return [null, "bad"];
   const mime = m[1].toLowerCase();
   const check = MAGIC[mime];
-  if (!mime.startsWith(prefix) || !check) return [null, "type"];
+  const prefixes = Array.isArray(prefix) ? prefix : [prefix];
+  if (!prefixes.some((p) => mime.startsWith(p)) || !check) return [null, "type"];
   if (m[3].length * 0.75 > maxBytes + 4) return [null, "size"];
   const buf = Buffer.from(m[3], "base64");
   if (buf.length < 12 || !check(buf)) return [null, "type"];
@@ -216,10 +218,11 @@ async function sendMail(to, subject, lines, link) {
     lines.map((l) => (typeof l === "string" ? "<p>" + escH(l) + "</p>" : '<p><a href="' + escH(l.url) + '" style="color:#0b7a4b;font-weight:600">' + escH(l.text) + "</a></p>")).join("") +
     (link ? '<p><a href="' + escH(link.url) + '" style="display:inline-block;background:#0b7a4b;color:#fff;padding:10px 18px;border-radius:10px;text-decoration:none;font-weight:700">' + escH(link.label) + "</a></p>" : "") +
     '<p style="color:#56675e;font-size:13px">You get these emails because you use Saathi.</p></div>';
+  lastMailError = "";
   try {
     if (MAIL_VIA === "smtp") {
       let timer;
-      const limit = new Promise((_, rej) => { timer = setTimeout(() => rej(new Error("timeout")), 9000); });
+      const limit = new Promise((_, rej) => { timer = setTimeout(() => rej(new Error("The mail server took too long to answer.")), 9000); });
       await Promise.race([smtp().sendMail({ from: { name: MAIL_NAME, address: MAIL_FROM }, to, subject, text, html }), limit]).finally(() => clearTimeout(timer));
       return true;
     }
@@ -231,14 +234,51 @@ async function sendMail(to, subject, lines, link) {
       body: JSON.stringify({ sender: { email: MAIL_FROM, name: MAIL_NAME }, to: [{ email: to }], subject, textContent: text, htmlContent: html }),
     });
     clearTimeout(t);
+    if (!r.ok) lastMailError = "Brevo answered " + r.status + ": " + (await r.text().catch(() => "")).slice(0, 300);
     return r.ok;
-  } catch (_) { return false; }
+  } catch (e) { lastMailError = String((e && (e.response || e.message)) || e).slice(0, 300); return false; }
 }
+let lastMailError = "";
+const mailError = () => lastMailError;
+
+/* ---------- SMS (free: SMS Gateway for Android sends from your own phone's SIM) ---------- */
+// Install "SMS Gateway for Android" (sms-gate.app) on an Android phone, pick Cloud server, and copy the
+// username and password it shows into SMSGATE_USER and SMSGATE_PASS.
+const SMS_USER = process.env.SMSGATE_USER || "";
+const SMS_PASS = process.env.SMSGATE_PASS || "";
+const SMS_URL = (process.env.SMSGATE_URL || "https://api.sms-gate.app/3rdparty/v1").replace(/\/$/, "");
+const smsOn = () => !!(SMS_USER && SMS_PASS);
+let lastSmsError = "";
+const smsError = () => lastSmsError;
+// Plain characters only, so a message fits in fewer SMS parts.
+const smsText = (t) => String(t).replace(/\u20b9/g, "Rs ").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/[\u2013\u2014\u2192]/g, "-").replace(/[^\x20-\x7e\n]/g, "").slice(0, 450);
+async function sendSms(phone, text) {
+  lastSmsError = "";
+  if (!smsOn() || !phone) return false;
+  const auth = "Basic " + Buffer.from(SMS_USER + ":" + SMS_PASS).toString("base64");
+  const post = async (path, body) => {
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 7000);
+    try { return await fetch(SMS_URL + path, { method: "POST", signal: ctl.signal, headers: { Authorization: auth, "Content-Type": "application/json" }, body: JSON.stringify(body) }); }
+    finally { clearTimeout(t); }
+  };
+  try {
+    const msg = smsText(text);
+    let r = await post("/messages", { phoneNumbers: [phone], textMessage: { text: msg } });
+    if (r.status === 404) r = await post("/message", { phoneNumbers: [phone], message: msg }); // older servers
+    if (!r.ok) lastSmsError = "SMS gateway answered " + r.status + ": " + (await r.text().catch(() => "")).slice(0, 300);
+    return r.ok;
+  } catch (e) { lastSmsError = String((e && e.message) || e).slice(0, 300); return false; }
+}
+// The site owner sees setup checks in their profile: the account whose email is ADMIN_EMAIL (or MAIL_FROM).
+const isAdmin = (u) => !!u && !!(process.env.ADMIN_EMAIL || MAIL_FROM) && u.email === String(process.env.ADMIN_EMAIL || MAIL_FROM).trim().toLowerCase();
 function siteUrl(req) {
   const host = req.headers["x-forwarded-host"] || req.headers.host || "";
   const proto = req.headers["x-forwarded-proto"] || (/^localhost|^127\./.test(host) ? "http" : "https");
   return host ? proto + "://" + host : "";
 }
+
+// UPI IDs look like name@bank.
+const normUpi = (v) => { const s = String(v || "").trim(); return /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z][a-zA-Z0-9.\-]{1,64}$/.test(s) ? s : null; };
 
 /* ---------- places ---------- */
 function kmBetween(a, b) {
@@ -303,6 +343,6 @@ async function requireUser(req, res) {
 
 module.exports = {
   RIDES, BOOKINGS, USERS, EMAILS, MEDIA, CONVS, LOCS, msgKind, kmBetween, samePlace, MAX_RIDES, BACKEND, hasStore, all, get, put, putNew, del, count, loadAll,
-  setSession, clearSession, currentUser, hashPassword, checkPassword, publicUser, mediaUrl, parseDataUrl, normPhone, normEmail,
-  mailOn, sendMail, siteUrl, str, text, int, newId, utcDay, queryId, queryParam, send, fail, readBody, jsonOnly, requireUser,
+  setSession, clearSession, currentUser, hashPassword, checkPassword, publicUser, mediaUrl, parseDataUrl, normPhone, normEmail, normUpi,
+  mailOn, sendMail, mailError, smsOn, sendSms, smsError, isAdmin, siteUrl, str, text, int, newId, utcDay, queryId, queryParam, send, fail, readBody, jsonOnly, requireUser,
 };

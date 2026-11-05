@@ -14,7 +14,7 @@ const LOCK_AFTER = 8;
 const LOCK_MIN = 15;
 const RESET_MIN = 30;
 
-const features = () => ({ email: L.mailOn() });
+const features = (u) => ({ email: L.mailOn(), sms: L.smsOn(), admin: L.isAdmin(u) });
 const okPassword = (p) => typeof p === "string" && p.length >= 8 && p.length <= 100;
 
 function readProfile(b, base) {
@@ -56,7 +56,7 @@ module.exports = async (req, res) => {
   try {
     if (req.method === "GET") {
       const u = await L.currentUser(req);
-      return L.send(res, 200, { user: L.publicUser(u), features: features() });
+      return L.send(res, 200, { user: L.publicUser(u), features: features(u) });
     }
     if (req.method !== "POST") return L.fail(res, 405, "method", "Use GET or POST.");
     if (!L.jsonOnly(req, res)) return;
@@ -77,7 +77,7 @@ module.exports = async (req, res) => {
       const user = Object.assign({ id, email, gender: "", bio: "", salt, hash, ver: 1, createdAt: Date.now() }, prof);
       try { await L.put(L.USERS, id, user); } catch (e) { await L.del(L.EMAILS, email).catch(() => {}); throw e; }
       L.setSession(res, user);
-      return L.send(res, 201, { user: L.publicUser(user), features: features() });
+      return L.send(res, 201, { user: L.publicUser(user), features: features(user) });
     }
 
     if (action === "login") {
@@ -97,12 +97,12 @@ module.exports = async (req, res) => {
       }
       if (user.failCount || user.lockUntil) { user.failCount = 0; user.lockUntil = 0; await L.put(L.USERS, user.id, user); }
       L.setSession(res, user);
-      return L.send(res, 200, { user: L.publicUser(user), features: features() });
+      return L.send(res, 200, { user: L.publicUser(user), features: features(user) });
     }
 
     if (action === "logout") {
       L.clearSession(res);
-      return L.send(res, 200, { user: null, features: features() });
+      return L.send(res, 200, { user: null, features: features(null) });
     }
 
     if (action === "forgot") {
@@ -133,7 +133,7 @@ module.exports = async (req, res) => {
       Object.assign(user, L.hashPassword(b.password), { ver: (user.ver || 1) + 1, resetHash: "", resetUntil: 0, failCount: 0, lockUntil: 0 });
       await L.put(L.USERS, user.id, user);
       L.setSession(res, user);
-      return L.send(res, 200, { user: L.publicUser(user), features: features() });
+      return L.send(res, 200, { user: L.publicUser(user), features: features(user) });
     }
 
     // The rest need a signed-in user.
@@ -145,7 +145,7 @@ module.exports = async (req, res) => {
       if (err) return L.fail(res, 400, "invalid", err);
       Object.assign(user, prof);
       await L.put(L.USERS, user.id, user);
-      return L.send(res, 200, { user: L.publicUser(user), features: features() });
+      return L.send(res, 200, { user: L.publicUser(user), features: features(user) });
     }
 
     if (action === "password") {
@@ -154,7 +154,23 @@ module.exports = async (req, res) => {
       Object.assign(user, L.hashPassword(b.password), { ver: (user.ver || 1) + 1 });
       await L.put(L.USERS, user.id, user);
       L.setSession(res, user);
-      return L.send(res, 200, { user: L.publicUser(user), features: features() });
+      return L.send(res, 200, { user: L.publicUser(user), features: features(user) });
+    }
+
+    // Setup checks for the site owner: send a test email or SMS to themselves and report the real error.
+    if (action === "testmail" || action === "testsms") {
+      if (!L.isAdmin(user)) return L.fail(res, 403, "not_admin", "Only the site owner can run this check.");
+      if (action === "testmail") {
+        if (!L.mailOn()) return L.fail(res, 501, "no_email", "Email isn't set up. Add SMTP_USER, SMTP_PASS and MAIL_FROM in Vercel, then redeploy.");
+        const ok = await L.sendMail(user.email, "Saathi test email", ["Hi " + user.name + ",", "Email from Saathi is working. Riders and drivers will get booking emails like this one."]);
+        return ok ? L.send(res, 200, { ok: true, message: "Test email sent to " + user.email + ". Check your inbox and the spam folder." })
+          : L.fail(res, 502, "mail_failed", "The email didn't go out. " + (L.mailError() || "No reason was given."));
+      }
+      if (!L.smsOn()) return L.fail(res, 501, "no_sms", "SMS isn't set up. Add SMSGATE_USER and SMSGATE_PASS in Vercel, then redeploy.");
+      if (!user.phone) return L.fail(res, 400, "no_phone", "Add your mobile number to your profile first.");
+      const ok = await L.sendSms(user.phone, "Saathi test SMS: automatic messages are working.");
+      return ok ? L.send(res, 200, { ok: true, message: "Test SMS queued for " + user.phone + ". It's sent from the phone running SMS Gateway." })
+        : L.fail(res, 502, "sms_failed", "The SMS didn't go out. " + (L.smsError() || "No reason was given."));
     }
 
     return L.fail(res, 400, "action", "Unknown action.");

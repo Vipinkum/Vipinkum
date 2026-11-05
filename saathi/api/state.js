@@ -48,7 +48,8 @@ module.exports = async (req, res) => {
         hasQr: !!r.qr,
         mine: !!me && r.driverUid === me,
       });
-      if (out.mine) { out.requested = c.requested; out.qr = L.mediaUrl(r.qr); } else delete out.qr;
+      if (out.mine) { out.requested = c.requested; out.qr = L.mediaUrl(r.qr); } else { delete out.qr; delete out.upi; }
+      out.hasUpi = !!r.upi;
       // Whether the driver is sharing live location right now, only for the driver and confirmed riders.
       if (out.mine || myConfirmed.has(r.id)) out.live = liveRides.has(r.id);
       delete out.driverUid;
@@ -79,6 +80,7 @@ module.exports = async (req, res) => {
           const d = userById.get(ride.driverUid);
           o.driverPhone = d ? d.phone || "" : "";
           o.qr = L.mediaUrl(ride.qr);
+          o.upi = ride.upi || "";
         }
         outBookings.push(o);
       }
@@ -97,7 +99,7 @@ module.exports = async (req, res) => {
       };
     }).sort((a, b) => b.lastAt - a.lastAt);
 
-    L.send(res, 200, { me: L.publicUser(sessionUser), features: { email: L.mailOn() }, rides: outRides, bookings: outBookings, convs: outConvs });
+    L.send(res, 200, { me: L.publicUser(sessionUser), features: { email: L.mailOn(), sms: L.smsOn(), admin: L.isAdmin(sessionUser) }, rides: outRides, bookings: outBookings, convs: outConvs });
   } catch (e) {
     L.fail(res, 502, "store_unreachable", "The ride board can't be reached right now.");
   }

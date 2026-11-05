@@ -77,6 +77,12 @@ module.exports = async (req, res) => {
         if (!qr || qr.type !== "qr" || qr.owner !== user.id) return L.fail(res, 400, "invalid", "That payment QR couldn't be found. Upload it again.");
         ride.qr = qrId;
       }
+      if (body.upi) {
+        const upi = L.normUpi(body.upi);
+        if (!upi) return L.fail(res, 400, "invalid", "That UPI ID doesn't look right. It looks like name@bank, for example asha@okaxis.");
+        ride.upi = upi;
+      }
+      if (ride.upi && ride.upi !== user.upi) { user.upi = ride.upi; await L.put(L.USERS, user.id, user); }
       const doc = Object.assign({ id: L.newId(), driverUid: user.id, driverName: user.name, status: "open", createdAt: Date.now() }, ride);
       await L.put(L.RIDES, doc.id, doc);
       return L.send(res, 201, { ride: doc });
@@ -92,7 +98,7 @@ module.exports = async (req, res) => {
       await L.put(L.RIDES, id, ride);
       await L.del(L.LOCS, id).catch(() => {});
       // Tell everyone who asked for a seat, with other rides on the same route that still have room.
-      if (L.mailOn()) {
+      if (L.mailOn() || L.smsOn()) {
         const [rides, bookings, users] = await Promise.all([L.all(L.RIDES), L.all(L.BOOKINGS), L.all(L.USERS)]);
         const byId = new Map(users.map((u) => [u.id, u]));
         const site = L.siteUrl(req);
@@ -114,8 +120,12 @@ module.exports = async (req, res) => {
           } else {
             lines.push("No other ride on this route has free seats right now. New rides are posted all the time, so check Saathi again soon.");
           }
-          return L.sendMail(p.email, "Ride cancelled: " + ride.from + " to " + ride.to + (alts.length ? " (other rides found)" : ""), lines,
-            { url: site + "/#find", label: "Find another ride" });
+          return Promise.all([
+            L.sendMail(p.email, "Ride cancelled: " + ride.from + " to " + ride.to + (alts.length ? " (other rides found)" : ""), lines,
+              { url: site + "/#find", label: "Find another ride" }),
+            L.sendSms(p.phone, "Saathi: " + user.name + " cancelled your ride " + ride.from + " to " + ride.to + ", " + niceDate(ride.date) + " " + ride.time + ". " +
+              (alts.length ? alts.length + (alts.length === 1 ? " other ride has" : " other rides have") + " seats on this route: " + site + "/#ride=" + alts[0].id : "Find another ride: " + site + "/#find")),
+          ]);
         }));
       }
       return L.send(res, 200, { ride });

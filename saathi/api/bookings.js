@@ -7,6 +7,7 @@ const L = require("./_lib");
 const statusOf = (b) => b.status || "pending";
 const ACTIVE = ["pending", "confirmed"];
 const plural = (n, one, many) => n + " " + (n === 1 ? one : many);
+const niceDate = (d) => new Date(d + "T00:00:00Z").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
 const tripLine = (r) => r.from + " to " + r.to + ", " + r.date + " at " + r.time;
 const waLink = (phone, text) => "https://wa.me/" + String(phone || "").replace(/\D/g, "") + (text ? "?text=" + encodeURIComponent(text) : "");
 
@@ -50,7 +51,8 @@ module.exports = async (req, res) => {
         message ? "Their note: “" + message + "”" : "",
         "Open Saathi to confirm or decline. They'll get your number once you confirm.",
       ].filter(Boolean), { url: site + "/#trips", label: "Review the request" })));
-      return L.send(res, 201, { booking: doc, emailed });
+      const texted = !!(driver && (await L.sendSms(driver.phone, "Saathi: " + user.name + " asked for " + plural(seats, "seat", "seats") + " on your ride " + ride.from + " to " + ride.to + ", " + niceDate(ride.date) + " " + ride.time + ". Confirm or decline: " + site + "/#trips")));
+      return L.send(res, 201, { booking: doc, emailed, texted });
     }
 
     if (req.method === "PATCH") {
@@ -67,7 +69,7 @@ module.exports = async (req, res) => {
       if (action === "accept" && status === "confirmed") return L.send(res, 200, { booking, emailed: false });
       if (action === "decline" && status === "declined") return L.send(res, 200, { booking, emailed: false });
       const passenger = await L.get(L.USERS, booking.uid);
-      let emailed = false;
+      let emailed = false, texted = false, textedAlt = false;
       if (action === "accept") {
         if (ride.status !== "open") return L.fail(res, 409, "cancelled", "This ride is cancelled.");
         const left = ride.seats - seatsTaken(bookings, ride.id, booking.id);
@@ -76,6 +78,12 @@ module.exports = async (req, res) => {
         booking.decidedAt = Date.now();
         await L.put(L.BOOKINGS, id, booking);
         if (passenger) {
+          const veh = ride.vehicleName || (ride.vehicle === "bike" ? "bike" : "car");
+          const sms = await Promise.all([
+            L.sendSms(passenger.phone, "Saathi: " + user.name + " confirmed your " + plural(booking.seats, "seat", "seats") + " " + ride.from + " to " + ride.to + ", " + niceDate(ride.date) + " " + ride.time + ". Driver " + user.phone + ", " + veh + ". Pay Rs " + ride.price * booking.seats + "."),
+            passenger.altPhone ? L.sendSms(passenger.altPhone, "Saathi trip: " + passenger.name + " is riding with " + user.name + " (" + user.phone + ") from " + ride.from + " to " + ride.to + " on " + niceDate(ride.date) + ", leaving " + ride.time + ". Vehicle: " + veh + ".") : false,
+          ]);
+          texted = sms[0]; textedAlt = sms[1];
           const share = "Saathi trip: " + passenger.name + " is riding with " + user.name + " (" + user.phone + ") from " + tripLine(ride) +
             ". Vehicle: " + (ride.vehicleName || (ride.vehicle === "bike" ? "bike" : "car")) + ". Seats: " + booking.seats + ".";
           emailed = await L.sendMail(passenger.email, "Confirmed: your seat from " + ride.from + " to " + ride.to, [
@@ -99,7 +107,7 @@ module.exports = async (req, res) => {
           ], { url: site + "/#find", label: "Find another ride" });
         }
       }
-      return L.send(res, 200, { booking, emailed });
+      return L.send(res, 200, { booking, emailed, texted, textedAlt });
     }
 
     if (req.method === "DELETE") {
