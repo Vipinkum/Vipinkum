@@ -69,7 +69,7 @@ module.exports = async (req, res) => {
       if (action === "accept" && status === "confirmed") return L.send(res, 200, { booking, emailed: false });
       if (action === "decline" && status === "declined") return L.send(res, 200, { booking, emailed: false });
       const passenger = await L.get(L.USERS, booking.uid);
-      let emailed = false, texted = false, textedAlt = false;
+      let emailed = false, texted = false, textedAlt = false, whatsappAlt = false;
       if (action === "accept") {
         if (ride.status !== "open") return L.fail(res, 409, "cancelled", "This ride is cancelled.");
         const left = ride.seats - seatsTaken(bookings, ride.id, booking.id);
@@ -79,19 +79,29 @@ module.exports = async (req, res) => {
         await L.put(L.BOOKINGS, id, booking);
         if (passenger) {
           const veh = ride.vehicleName || (ride.vehicle === "bike" ? "bike" : "car");
-          const sms = await Promise.all([
+          // The passenger's family contact gets the driver's details and a link to follow the trip live,
+          // on WhatsApp when it's set up, otherwise by SMS. The passenger can turn this off in their profile.
+          const alt = passenger.altPhone && passenger.altShare !== false ? L.tripShare(passenger, user, ride, booking, site) : null;
+          const sent = await Promise.all([
             L.sendSms(passenger.phone, "Saathi: " + user.name + " confirmed your " + plural(booking.seats, "seat", "seats") + " " + ride.from + " to " + ride.to + ", " + niceDate(ride.date) + " " + ride.time + ". Driver " + user.phone + ", " + veh + ". Pay Rs " + ride.price * booking.seats + "."),
-            passenger.altPhone ? L.sendSms(passenger.altPhone, "Saathi trip: " + passenger.name + " is riding with " + user.name + " (" + user.phone + ") from " + ride.from + " to " + ride.to + " on " + niceDate(ride.date) + ", leaving " + ride.time + ". Vehicle: " + veh + ".") : false,
+            alt ? L.sendWhatsApp(passenger.altPhone, alt.params) : false,
           ]);
-          texted = sms[0]; textedAlt = sms[1];
-          const share = "Saathi trip: " + passenger.name + " is riding with " + user.name + " (" + user.phone + ") from " + tripLine(ride) +
-            ". Vehicle: " + (ride.vehicleName || (ride.vehicle === "bike" ? "bike" : "car")) + ". Seats: " + booking.seats + ".";
+          texted = sent[0]; whatsappAlt = sent[1];
+          if (alt && !whatsappAlt) textedAlt = await L.sendSms(passenger.altPhone, alt.sms);
+          if (whatsappAlt || textedAlt) {
+            booking.altSent = { wa: whatsappAlt, sms: textedAlt, at: Date.now() };
+            await L.put(L.BOOKINGS, id, booking);
+          }
+          const who = passenger.altName || "your alternative number";
           emailed = await L.sendMail(passenger.email, "Confirmed: your seat from " + ride.from + " to " + ride.to, [
             "Hi " + passenger.name + ",",
             user.name + " confirmed your " + plural(booking.seats, "seat", "seats") + " on " + tripLine(ride) + ".",
             "Pay ₹" + ride.price * booking.seats + " to the driver" + (ride.price === 0 ? " (this ride is free)." : ride.qr ? ", in cash or by UPI with the QR code on the ride in Saathi." : " on the day."),
             "Driver's number: " + user.phone + ". WhatsApp: " + waLink(user.phone),
-            passenger.altPhone ? "Send these trip details to " + (passenger.altName || "your alternative number") + " on WhatsApp: " + waLink(passenger.altPhone, share) : "",
+            !alt ? "" : whatsappAlt ? who + " got the driver's details and a link to follow your trip live on WhatsApp."
+              : textedAlt ? who + " got the driver's details and a link to follow your trip live by SMS. Send it on WhatsApp too: " + waLink(passenger.altPhone, alt.text)
+              : "Send " + who + " the driver's details and a link to follow your trip live on WhatsApp: " + waLink(passenger.altPhone, alt.text),
+            alt ? "On the day, tap Share my location on the ride in Saathi so the driver and " + who + " can see where you are." : "",
             "Agree on the exact pickup point before you leave.",
           ].filter(Boolean), { url: site + "/#trips", label: "See your trip" });
         }
@@ -107,7 +117,7 @@ module.exports = async (req, res) => {
           ], { url: site + "/#find", label: "Find another ride" });
         }
       }
-      return L.send(res, 200, { booking, emailed, texted, textedAlt });
+      return L.send(res, 200, { booking, emailed, texted, textedAlt, whatsappAlt });
     }
 
     if (req.method === "DELETE") {
@@ -120,8 +130,15 @@ module.exports = async (req, res) => {
       booking.status = "cancelled";
       booking.cancelledAt = Date.now();
       await L.put(L.BOOKINGS, id, booking);
+      // Live location stops with the seat: the rider's own point, and the driver's once no rider is left.
+      await L.del(L.PLOCS, booking.rideId + "." + booking.uid).catch(() => {});
       if (was === "confirmed") {
         const ride = await L.get(L.RIDES, booking.rideId);
+        const stillConfirmed = (await L.all(L.BOOKINGS)).some((x) => x.rideId === booking.rideId && x.id !== id && x.status === "confirmed");
+        if (!stillConfirmed) {
+          const loc = await L.get(L.LOCS, booking.rideId);
+          if (loc && loc.active) { loc.active = false; delete loc.lat; delete loc.lon; await L.put(L.LOCS, booking.rideId, loc); }
+        }
         const driver = ride && (await L.get(L.USERS, ride.driverUid));
         if (driver) {
           await L.sendMail(driver.email, "Seat cancelled: " + ride.from + " to " + ride.to, [

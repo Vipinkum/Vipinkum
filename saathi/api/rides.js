@@ -96,10 +96,12 @@ module.exports = async (req, res) => {
       ride.status = "cancelled";
       ride.cancelledAt = Date.now();
       await L.put(L.RIDES, id, ride);
-      await L.del(L.LOCS, id).catch(() => {});
+      // Live location ends with the ride, the driver's and every rider's.
+      const bookings = await L.all(L.BOOKINGS);
+      await Promise.all([L.del(L.LOCS, id), ...bookings.filter((b) => b.rideId === id).map((b) => L.del(L.PLOCS, id + "." + b.uid))].map((p) => p.catch(() => {})));
       // Tell everyone who asked for a seat, with other rides on the same route that still have room.
       if (L.mailOn() || L.smsOn()) {
-        const [rides, bookings, users] = await Promise.all([L.all(L.RIDES), L.all(L.BOOKINGS), L.all(L.USERS)]);
+        const [rides, users] = await Promise.all([L.all(L.RIDES), L.all(L.USERS)]);
         const byId = new Map(users.map((u) => [u.id, u]));
         const site = L.siteUrl(req);
         const notify = bookings.filter((b) => b.rideId === id && ["pending", "confirmed"].includes(b.status || "pending"));

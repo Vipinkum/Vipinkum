@@ -15,6 +15,7 @@ const MEDIA = "saathi:media"; // photos, payment QR codes and voice notes, read 
 const CONVS = "saathi:convs"; // one row per chat: a ride plus one passenger
 const msgKind = (conv) => "saathi:msg:" + conv; // messages of one chat
 const LOCS = "saathi:loc"; // latest live location per ride, only while the driver shares it
+const PLOCS = "saathi:ploc"; // latest live location of a confirmed passenger (id rideId.uid), only while they share it
 const MAX_RIDES = 2000;
 
 const hasStore = () => !!BACKEND;
@@ -152,7 +153,18 @@ const mediaUrl = (id) => (id ? "/api/media?id=" + id : "");
 const publicUser = (u) => u && {
   id: u.id, name: u.name, email: u.email, phone: u.phone || "", gender: u.gender || "", bio: u.bio || "", createdAt: u.createdAt,
   photo: mediaUrl(u.photo), qr: mediaUrl(u.qr), qrId: u.qr || "", upi: u.upi || "", altName: u.altName || "", altPhone: u.altPhone || "",
+  altShare: u.altShare !== false,
 };
+
+// The trip link a passenger's family contact gets: it shows that one trip live without logging in.
+// It's signed, so it can't be guessed, and it stops showing anything once the seat or ride is cancelled.
+const shareToken = (bookingId) => bookingId + "." + crypto.createHmac("sha256", SECRET).update("live:" + bookingId).digest("base64url").slice(0, 22);
+function readShareToken(t) {
+  const m = /^([a-f0-9]{6,64})\.([A-Za-z0-9_-]{22})$/.exec(String(t || ""));
+  if (!m) return null;
+  const want = shareToken(m[1]).slice(m[1].length + 1);
+  return crypto.timingSafeEqual(Buffer.from(want), Buffer.from(m[2])) ? m[1] : null;
+}
 
 /* ---------- uploaded files (sent as data: URLs inside JSON) ---------- */
 const MAGIC = {
@@ -269,6 +281,54 @@ async function sendSms(phone, text) {
     return r.ok;
   } catch (e) { lastSmsError = String((e && e.message) || e).slice(0, 300); return false; }
 }
+/* ---------- WhatsApp (optional: Meta's WhatsApp Cloud API with an approved message template) ---------- */
+// WhatsApp only lets a business start a chat with a template that Meta has approved. Create one named
+// saathi_trip (or set WHATSAPP_TEMPLATE) with six variables, in this order: passenger, driver, driver's
+// phone, vehicle, trip (route, day and time), live link. See the README for the exact text.
+const WA_TOKEN = process.env.WHATSAPP_TOKEN || "";
+const WA_PHONE_ID = process.env.WHATSAPP_PHONE_ID || "";
+const WA_TEMPLATE = process.env.WHATSAPP_TEMPLATE || "saathi_trip";
+const WA_LANG = process.env.WHATSAPP_LANG || "en";
+const WA_API = "https://graph.facebook.com/" + (process.env.WHATSAPP_API_VERSION || "v23.0");
+const waOn = () => !!(WA_TOKEN && WA_PHONE_ID);
+let lastWaError = "";
+const waError = () => lastWaError;
+async function sendWhatsApp(phone, params) {
+  lastWaError = "";
+  if (!waOn() || !phone) return false;
+  // Template values can't hold new lines, tabs or long runs of spaces.
+  const clean = (s) => String(s == null ? "" : s).replace(/[\r\n\t]+/g, " ").replace(/ {4,}/g, " ").trim().slice(0, 500) || "-";
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 7000);
+  try {
+    const r = await fetch(WA_API + "/" + encodeURIComponent(WA_PHONE_ID) + "/messages", {
+      method: "POST", signal: ctl.signal,
+      headers: { Authorization: "Bearer " + WA_TOKEN, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messaging_product: "whatsapp", to: String(phone).replace(/\D/g, ""), type: "template",
+        template: { name: WA_TEMPLATE, language: { code: WA_LANG }, components: [{ type: "body", parameters: params.map((p) => ({ type: "text", text: clean(p) })) }] },
+      }),
+    });
+    if (!r.ok) lastWaError = "WhatsApp answered " + r.status + ": " + (await r.text().catch(() => "")).slice(0, 300);
+    return r.ok;
+  } catch (e) { lastWaError = String((e && e.message) || e).slice(0, 300); return false; }
+  finally { clearTimeout(t); }
+}
+
+const niceDate = (d) => new Date(d + "T00:00:00Z").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+// What a passenger's family contact is sent: the driver's details and the live trip link,
+// as WhatsApp template values, an SMS, and a ready-to-send WhatsApp text.
+function tripShare(p, driver, ride, booking, site) {
+  const veh = ride.vehicleName || (ride.vehicle === "bike" ? "Bike" : "Car");
+  const trip = ride.from + " to " + ride.to + ", " + niceDate(ride.date) + " at " + ride.time;
+  const link = site + "/#live=" + shareToken(booking.id);
+  return {
+    link,
+    params: [p.name, driver.name, driver.phone || "-", veh, trip, link],
+    sms: "Saathi: " + p.name + " is riding with " + driver.name + " (" + driver.phone + "), " + veh + ", " + trip + ". Live location: " + link,
+    text: "Saathi trip details for " + p.name + "\nTrip: " + trip + "\nDriver: " + driver.name + ", " + driver.phone + "\nVehicle: " + veh + "\nSeats: " + booking.seats + "\nLive location: " + link,
+  };
+}
+
 // The site owner sees setup checks in their profile: the account whose email is ADMIN_EMAIL (or MAIL_FROM).
 const isAdmin = (u) => !!u && !!(process.env.ADMIN_EMAIL || MAIL_FROM) && u.email === String(process.env.ADMIN_EMAIL || MAIL_FROM).trim().toLowerCase();
 function siteUrl(req) {
@@ -342,7 +402,7 @@ async function requireUser(req, res) {
 }
 
 module.exports = {
-  RIDES, BOOKINGS, USERS, EMAILS, MEDIA, CONVS, LOCS, msgKind, kmBetween, samePlace, MAX_RIDES, BACKEND, hasStore, all, get, put, putNew, del, count, loadAll,
-  setSession, clearSession, currentUser, hashPassword, checkPassword, publicUser, mediaUrl, parseDataUrl, normPhone, normEmail, normUpi,
-  mailOn, sendMail, mailError, smsOn, sendSms, smsError, isAdmin, siteUrl, str, text, int, newId, utcDay, queryId, queryParam, send, fail, readBody, jsonOnly, requireUser,
+  RIDES, BOOKINGS, USERS, EMAILS, MEDIA, CONVS, LOCS, PLOCS, msgKind, kmBetween, samePlace, MAX_RIDES, BACKEND, hasStore, all, get, put, putNew, del, count, loadAll,
+  setSession, clearSession, currentUser, hashPassword, checkPassword, publicUser, mediaUrl, parseDataUrl, normPhone, normEmail, normUpi, shareToken, readShareToken,
+  mailOn, sendMail, mailError, smsOn, sendSms, smsError, waOn, sendWhatsApp, waError, niceDate, tripShare, isAdmin, siteUrl, str, text, int, newId, utcDay, queryId, queryParam, send, fail, readBody, jsonOnly, requireUser,
 };

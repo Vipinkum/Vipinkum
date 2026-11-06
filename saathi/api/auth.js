@@ -14,7 +14,7 @@ const LOCK_AFTER = 8;
 const LOCK_MIN = 15;
 const RESET_MIN = 30;
 
-const features = (u) => ({ email: L.mailOn(), sms: L.smsOn(), admin: L.isAdmin(u) });
+const features = (u) => ({ email: L.mailOn(), sms: L.smsOn(), wa: L.waOn(), admin: L.isAdmin(u) });
 const okPassword = (p) => typeof p === "string" && p.length >= 8 && p.length <= 100;
 
 function readProfile(b, base) {
@@ -43,6 +43,8 @@ function readProfile(b, base) {
     }
   }
   if (b.altName !== undefined) out.altName = L.str(b.altName, 30);
+  // Send that contact the driver's details and a live trip link when a seat is confirmed (on unless turned off).
+  if (b.altShare !== undefined) out.altShare = b.altShare !== false;
   return [out, null];
 }
 
@@ -157,9 +159,16 @@ module.exports = async (req, res) => {
       return L.send(res, 200, { user: L.publicUser(user), features: features(user) });
     }
 
-    // Setup checks for the site owner: send a test email or SMS to themselves and report the real error.
-    if (action === "testmail" || action === "testsms") {
+    // Setup checks for the site owner: send a test email, SMS or WhatsApp to themselves and report the real error.
+    if (action === "testmail" || action === "testsms" || action === "testwa") {
       if (!L.isAdmin(user)) return L.fail(res, 403, "not_admin", "Only the site owner can run this check.");
+      if (action === "testwa") {
+        if (!L.waOn()) return L.fail(res, 501, "no_wa", "WhatsApp isn't set up. Add WHATSAPP_TOKEN and WHATSAPP_PHONE_ID in Vercel, then redeploy.");
+        if (!user.phone) return L.fail(res, 400, "no_phone", "Add your mobile number to your profile first.");
+        const ok = await L.sendWhatsApp(user.phone, [user.name, "Test Driver", user.phone, "White Swift Dzire", "Noida to Agra, test trip", L.siteUrl(req) + "/#find"]);
+        return ok ? L.send(res, 200, { ok: true, message: "Test WhatsApp sent to " + user.phone + ". It should arrive in a few seconds." })
+          : L.fail(res, 502, "wa_failed", "The WhatsApp message didn't go out. " + (L.waError() || "No reason was given."));
+      }
       if (action === "testmail") {
         if (!L.mailOn()) return L.fail(res, 501, "no_email", "Email isn't set up. Add SMTP_USER, SMTP_PASS and MAIL_FROM in Vercel, then redeploy.");
         const ok = await L.sendMail(user.email, "Saathi test email", ["Hi " + user.name + ",", "Email from Saathi is working. Riders and drivers will get booking emails like this one."]);

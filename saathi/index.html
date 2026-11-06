@@ -404,7 +404,7 @@ details.card form{display:grid;gap:14px}
 .trk-head .x{text-decoration:none;color:var(--ink);flex:none}
 .trk-head .h2{font-weight:800;font-size:clamp(24px,3.4vw,32px);letter-spacing:-.02em;line-height:1.1}
 .trk{display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-areas:"map status" "map info";grid-template-rows:auto 1fr;gap:14px 20px;margin-top:18px;align-items:start}
-.trk-status{grid-area:status}.trk-map{grid-area:map}.trk-side{grid-area:info}
+.trk-status{grid-area:status}.trk-mapw{grid-area:map;position:relative;min-width:0}.trk-side{grid-area:info}
 .trk-status .state{box-shadow:var(--sh-1)}
 .trk-map{height:min(70vh,620px);border-radius:20px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--sh-1);background:var(--surface-2);z-index:0}
 .trk-side .row{display:flex;gap:8px}.trk-side .row .btn{flex:1}
@@ -425,6 +425,45 @@ details.card form{display:grid;gap:14px}
 .mk.drv .core svg{width:19px;height:19px}
 .mk.drv .ring{position:absolute;inset:0;border-radius:50%;background:rgba(11,122,75,.28);animation:ring 1.8s ease-out infinite}
 @keyframes ring{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.6);opacity:0}}
+/* heading arrow on the vehicle, the rider's blue dot, riders' faces for the driver, name labels */
+.mk.drv .hd{position:absolute;inset:-8px;transition:transform .8s ease}
+.mk.drv .hd::before{content:"";position:absolute;left:50%;top:0;margin-left:-7px;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:11px solid #0b7a4b}
+.mk.drv.nohd .hd{display:none}
+.mk.me .halo{position:absolute;inset:0;border-radius:50%;background:rgba(33,86,194,.28);animation:ring 2s ease-out infinite}
+.mk.me .dot{position:absolute;inset:7px;border-radius:50%;background:#2156c2;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.mk.pax .face{position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 13px var(--f-display);border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);overflow:hidden;padding-top:2px}
+.mk.pax .face img{width:100%;height:100%;object-fit:cover;display:block}
+.mk.pax.stale .face{filter:grayscale(1);opacity:.75}
+.mk .lbl{position:absolute;top:calc(100% + 3px);left:50%;transform:translateX(-50%);white-space:nowrap;font:700 12px/1 var(--f-display);background:#fff;color:#0f1a14;padding:4px 7px 2px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.recenter{position:absolute;right:12px;bottom:24px;z-index:500;width:44px;height:44px;border-radius:12px;border:0;background:var(--surface);color:var(--ink);box-shadow:var(--sh-2);display:grid;place-items:center;cursor:pointer}
+.recenter svg{width:22px;height:22px}
+/* status card: who is how far, the arrival time, and how much of the way is done */
+.tst{display:grid;gap:10px;border-radius:18px;padding:14px 15px;background:var(--surface-2)}
+.tst.ok{background:var(--brand-soft)}.tst.wait{background:var(--accent-soft)}.tst.no{background:var(--rose-soft)}
+.tst .tst-row{display:flex;gap:12px;align-items:center}
+.tst .tst-row>svg{width:26px;height:26px}
+.tst.wait .tst-row>svg{color:var(--accent-text)}.tst.no .tst-row>svg{color:var(--rose)}
+.tst .txt{flex:1;min-width:0}
+.tst .txt b{display:block;font:800 19px/1.2 var(--f-display);padding-top:2px;overflow-wrap:anywhere}
+.tst .txt span{display:block;font-size:14.5px;color:var(--muted);margin-top:2px}
+.tst .pulse{margin-right:0}
+.eta{display:grid;justify-items:center;align-content:center;min-width:62px;padding:8px 10px 6px;border-radius:14px;background:var(--surface);box-shadow:var(--sh-1);line-height:1;flex:none}
+.eta b{font:800 24px var(--f-display);font-variant-numeric:tabular-nums}
+.eta small{font-size:12px;color:var(--muted);margin-top:3px}
+.prog{height:6px;border-radius:3px;background:color-mix(in srgb,var(--brand) 20%,transparent);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--brand);border-radius:3px;transition:width .6s ease}
+.prog-l{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--muted);margin-top:-4px}
+/* riders on the driver's map */
+.pxl{display:grid}
+.pxr{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.pxr:first-child{border-top:0;padding-top:0}
+.pxr .nm{flex:1;min-width:0}
+.pxr .nm b{display:block;font-weight:600;overflow-wrap:anywhere}
+.pxr .nm span{display:flex;align-items:center;font-size:13.5px;color:var(--muted)}
+.pxr .nm .pulse{width:8px;height:8px}
+.pxr .acts{display:flex;gap:6px}
+.btn.ic{width:42px;min-width:42px;padding:0}
+.btn.ic svg{margin:0}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .trk-map .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.88)}}
 :root[data-theme="dark"] .trk-map .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.88)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tg.live{background:rgba(34,194,107,.16);color:#5fe0a0}}
@@ -836,7 +875,10 @@ function normRide(d){const v=d.vehicle==="bike"?"bike":"car";
 const STATUSES=["pending","confirmed","declined","cancelled"];
 function normBooking(d){return{id:str(d.id,64),rideId:str(d.rideId,64),seats:clampInt(d.seats,1,6),status:STATUSES.includes(d.status)?d.status:"pending",
   createdAt:Number(d.createdAt)||0,decidedAt:Number(d.decidedAt)||0,message:str(d.message,200),mine:d.mine===true,name:str(d.name,40)||"Passenger",
-  gender:str(d.gender,10),phone:str(d.phone,16),driverPhone:str(d.driverPhone,16),photo:mediaPath(d.photo),qr:mediaPath(d.qr),upi:UPI_RE.test(d.upi||"")?d.upi:"",conv:str(d.conv,140)};}
+  gender:str(d.gender,10),phone:str(d.phone,16),driverPhone:str(d.driverPhone,16),photo:mediaPath(d.photo),qr:mediaPath(d.qr),upi:UPI_RE.test(d.upi||"")?d.upi:"",conv:str(d.conv,140),
+  token:TOKEN_RE.test(d.token||"")?d.token:"",altSent:{wa:!!(d.altSent&&d.altSent.wa),sms:!!(d.altSent&&d.altSent.sms)}};}
+/* The signed link that shows one passenger's trip live to their family contact */
+const TOKEN_RE=/^[a-f0-9]{6,64}\.[A-Za-z0-9_-]{22}$/;
 function normConv(d){const o=d.other||{},r=d.ride;return{id:str(d.id,140),rideId:str(d.rideId,64),role:d.role==="driver"?"driver":"passenger",
   other:{name:str(o.name,40)||"Saathi member",photo:mediaPath(o.photo)},ride:r?{from:str(r.from,60),to:str(r.to,60),date:str(r.date,10),time:str(r.time,5),status:r.status==="cancelled"?"cancelled":"open"}:null,
   lastText:str(d.lastText,160),lastAt:Number(d.lastAt)||0,lastMine:d.lastMine===true,unread:clampInt(d.unread,0,999)};}
@@ -1248,8 +1290,9 @@ function sheetHTML(r){
       if(!past)f+=cancelBtn("Cancel request");
     }else if(b&&b.status==="confirmed"){
       f=stateHTML("ok",ICON.tick,"Your seat is confirmed",plural(b.seats,"seat","seats")+" · "+inr(b.seats*r.price)+" to pay "+esc(dn)+" on the day.");
-      if(shareWindow(r))f+='<a class="btn primary wide" href="#track='+esc(r.id)+'">'+(r.live?'<span class="pulse"></span>Track '+esc(dn)+" live":ICON.pin+"Live location")+"</a>"
+      if(canShare(r))f+='<a class="btn primary wide" href="#track='+esc(r.id)+'">'+(r.live?'<span class="pulse"></span>Track '+esc(dn)+" live":ICON.pin+"Live location")+"</a>"
         +(r.live?"":'<p class="hint">You can follow '+esc(dn)+" on a map once they start sharing their location"+(S.features.email?". We’ll email you when they do.":".")+"</p>");
+      f+=liveCardHTML(r);
       if(b.driverPhone&&!past){
         const text="Hi "+dn+", this is "+S.user.name+" from Saathi. My "+plural(b.seats,"seat","seats")+" on your ride from "+tripLine(r)+" "+(b.seats===1?"is":"are")+" confirmed. Where should I meet you?";
         f+='<div class="row"><a class="btn wa" href="'+esc(waUrl(b.driverPhone,text))+'" target="_blank" rel="noopener" aria-label="WhatsApp '+esc(dn)+'">'+ICON.chat+'WhatsApp</a><a class="btn ghost" href="'+esc(telUrl(b.driverPhone))+'">'+ICON.phone+'Call</a></div><p class="hint">'+esc(dn)+"’s number: <b>"+esc(fmtPhone(b.driverPhone))+"</b></p>";
@@ -1273,22 +1316,32 @@ function sheetHTML(r){
   if(!isDriver&&S.user&&r.status==="open")f+='<a class="btn ghost wide" href="#chat='+esc(r.id+"."+S.user.id)+'">'+ICON.chat+"Message "+esc(dn)+"</a>";
   return h+'<div class="foot">'+f+"</div>";
 }
-/* One tap sends the trip and driver details to the passenger's alternative number (free: WhatsApp or SMS from their phone) */
+/* The passenger's alternative number (family or a friend) gets the driver's details and a link that shows the trip live.
+   Saathi sends it on its own when WhatsApp or SMS is set up; otherwise one tap opens WhatsApp with it ready. */
+const liveLink=b=>b&&b.token?location.origin+"/#live="+b.token:"";
+const altWho=()=>S.user&&S.user.altName?S.user.altName:"your family contact";
+const altOn=()=>!!(S.user&&S.user.altPhone&&S.user.altShare!==false);
 function shareText(r,b){
-  const arr=r.dur!=null?addTime(r.time,r.dur):null;
+  const arr=r.dur!=null?addTime(r.time,r.dur):null,link=liveLink(b);
   return"Saathi trip details for "+S.user.name+"\n"
     +"From: "+r.from+"\nTo: "+r.to+"\n"
     +"Date: "+shortDate(r.date)+", leaving "+r.time+(arr?" (arrives about "+arr.t+")":"")+"\n"
     +"Driver: "+r.driverName+(b.driverPhone?", "+fmtPhone(b.driverPhone):"")+"\n"
     +"Vehicle: "+(r.vehicleName||(r.vehicle==="bike"?"Bike":"Car"))+"\n"
-    +"Seats: "+b.seats+"\n"+location.origin;
+    +"Seats: "+b.seats+"\n"
+    +(link?"Live location: "+link:location.origin);
 }
+function shareBtns(r,b){const u=S.user,t=shareText(r,b);
+  return'<div class="row"><a class="btn wa sm" href="'+esc(waUrl(u.altPhone,t))+'" target="_blank" rel="noopener">'+ICON.chat+'WhatsApp</a><a class="btn ghost sm" href="'+esc("sms:+"+digits(u.altPhone)+"?&body="+encodeURIComponent(t))+'">SMS</a></div>';}
 function shareHTML(r,b){
   const u=S.user;
-  if(!u.altPhone)return'<p class="hint">Add an alternative number in <a href="#profile">your profile</a> to send these trip and driver details to family or a friend in one tap.</p>';
-  const t=shareText(r,b),who=u.altName||"your alternative number";
-  return'<div class="share"><div><b>'+(S.features.sms?"Trip details sent to ":"Send trip details to ")+esc(who)+"</b><span>"+(S.features.sms?esc(fmtPhone(u.altPhone))+" got the route, time, and the driver’s name, number and vehicle by SMS when your seat was confirmed. Send them again on WhatsApp or SMS:":esc(fmtPhone(u.altPhone))+" gets the route, time, and the driver’s name, number and vehicle.")+"</span></div>"
-    +'<div class="row"><a class="btn wa sm" href="'+esc(waUrl(u.altPhone,t))+'" target="_blank" rel="noopener">'+ICON.chat+'WhatsApp</a><a class="btn ghost sm" href="'+esc("sms:+"+digits(u.altPhone)+"?&body="+encodeURIComponent(t))+'">SMS</a></div></div>';
+  if(!u.altPhone)return'<p class="hint">Add a family member’s or friend’s number in <a href="#profile">your profile</a> to send them the driver’s details and your live location on WhatsApp.</p>';
+  if(u.altShare===false)return'<p class="hint">Sending your live location and the driver’s details to '+esc(altWho())+' is off. Turn it on in <a href="#profile">your profile</a>.</p>';
+  const who=esc(altWho()),num=esc(fmtPhone(u.altPhone)),s=b.altSent||{};
+  const title=s.wa?"Sent to "+who+" on WhatsApp":s.sms?"Sent to "+who+" by SMS":"Send your live location to "+who;
+  const sub=(s.wa||s.sms?num+" got the driver’s name, number and vehicle, and a link to follow your trip live.":num+" gets the driver’s name, number and vehicle, and a link to follow your trip live on a map.")
+    +(TRK.rideId===r.id?" They can see where you are right now.":" The link shows where you are while you share your location.")+(s.wa?" Send it again:":s.sms?" Send it on WhatsApp too:":"");
+  return'<div class="share"><div><b>'+title+"</b><span>"+sub+"</span></div>"+shareBtns(r,b)+"</div>";
 }
 function openRide(id,opener){S.openId=id;S.opener=opener||null;S.bookN=1;S.confirm=null;renderSheet();$("#sheet").hidden=false;document.documentElement.style.overflow="hidden";$("#sheet-card").focus();}
 function closeSheet(){if($("#sheet").hidden)return;$("#sheet").hidden=true;S.openId=null;S.confirm=null;document.documentElement.style.overflow="";if(S.opener&&document.contains(S.opener))S.opener.focus();}
@@ -1343,7 +1396,11 @@ function profileHTML(){
   f+=fld("pf-phone","Mobile number <em>(for WhatsApp)</em>",phoneHTML("pf-phone",ph),"Shared only with people whose seat is confirmed on the same ride.");
   f+=fld("pf-gender","Gender",genderHTML("pf-gender",u.gender),"Needed to request or offer women-only rides.");
   f+=fld("pf-altname","Alternative contact’s name <em>(optional)</em>",'<input id="pf-altname" name="altName" maxlength="30" placeholder="Papa, Didi, Rahul" value="'+esc(u.altName)+'">');
-  f+=fld("pf-alt","Alternative number <em>(family or friend)</em>",phoneHTML("pf-alt",digits(u.altPhone).slice(-10)).replace('name="phone"','name="altPhone"'),"When a driver confirms your seat, you can send this number the ride and driver details in one tap.");
+  f+=fld("pf-alt","Alternative number <em>(family or friend)</em>",phoneHTML("pf-alt",digits(u.altPhone).slice(-10)).replace('name="phone"','name="altPhone"'),"Someone who can follow your trips. Leave it empty if you don’t want this.");
+  const how=S.features.wa?"When a driver confirms your seat, Saathi sends this number the driver’s name, number and vehicle, and a link to follow your trip live on a map."
+    :S.features.sms?"When a driver confirms your seat, Saathi texts this number the driver’s details and a link to follow your trip live, and you can send the same on WhatsApp in one tap."
+    :"When a driver confirms your seat, one tap sends this number the driver’s details and a link to follow your trip live, on WhatsApp.";
+  f+='<label class="check"><input type="checkbox" name="altShare"'+(u.altShare!==false?" checked":"")+"><span><b>Send my live location and driver details to this number on WhatsApp</b><small>"+how+" The link shows where you are while you share your location, and stops when the ride ends or is cancelled.</small></span></label>";
   f+=fld("pf-bio","About you <em>(optional)</em>",'<textarea id="pf-bio" name="bio" maxlength="200" placeholder="Office commuter, quiet rider, fine with music…">'+esc(u.bio)+"</textarea>",'<span id="pf-count">'+u.bio.length+" / 200</span> · Shown to riders on your listings.");
   f+='<p class="err" role="alert" hidden></p><p class="okmsg" role="status" hidden></p><button class="btn primary" type="submit">Save changes</button></form>';
   let side='<div class="pf-side"><div class="card"><div class="eyebrow">Your activity</div><div class="stats" id="pf-stats"></div></div>';
@@ -1377,7 +1434,7 @@ function updateStats(){const el=$("#pf-stats");if(!el||!S.user)return;
   el.innerHTML=st(offered,offered===1?"ride offered":"rides offered")+st(rode,rode===1?"seat confirmed":"seats confirmed")+st(w,w===1?"request to answer":"requests to answer");}
 function renderProfile(force){
   const el=$("#profile-body"),u=S.user,showAuth=!u||(S.authMode==="reset"&&!!S.resetToken);
-  const k=showAuth?"auth:"+S.authMode+":"+S.authMsg+":"+S.features.email:"me:"+[u.id,u.name,u.phone,u.gender,u.bio,u.email,u.photo,u.altName,u.altPhone,S.features.admin,S.features.email,S.features.sms].join("|");
+  const k=showAuth?"auth:"+S.authMode+":"+S.authMsg+":"+S.features.email:"me:"+[u.id,u.name,u.phone,u.gender,u.bio,u.email,u.photo,u.altName,u.altPhone,u.altShare,S.features.admin,S.features.email,S.features.sms,S.features.wa].join("|");
   if(force||k!==S.profileKey){S.profileKey=k;el.innerHTML=showAuth?authHTML():profileHTML();}
   updateStats();
 }
@@ -1407,7 +1464,7 @@ async function submitAccount(f){
     bad=body.name.length<2?"Add your name (at least 2 letters).":!EMAIL_RE.test(body.email)?"Enter a valid email address.":!phoneOk(body.phone)?"Enter a 10-digit Indian mobile number.":body.password.length<8?"Use a password of at least 8 characters.":"";}
   else if(kind==="forgot"){body={action:"forgot",email:v("email")};bad=!EMAIL_RE.test(body.email)?"Enter the email you signed up with.":"";}
   else if(kind==="reset"){body={action:"reset",token:S.resetToken,password:pw("password")};bad=body.password.length<8?"Use a password of at least 8 characters.":"";}
-  else if(kind==="profile"){body={action:"profile",name:v("name"),phone:v("phone"),gender:v("gender"),bio:v("bio"),altName:v("altName"),altPhone:v("altPhone")};
+  else if(kind==="profile"){body={action:"profile",name:v("name"),phone:v("phone"),gender:v("gender"),bio:v("bio"),altName:v("altName"),altPhone:v("altPhone"),altShare:!!(f.elements.altShare&&f.elements.altShare.checked)};
     bad=body.name.length<2?"Add your name (at least 2 letters).":!phoneOk(body.phone)?"Enter a 10-digit Indian mobile number.":body.altPhone&&!phoneOk(body.altPhone)?"The alternative number needs to be a 10-digit Indian mobile number.":"";}
   else if(kind==="password"){body={action:"password",current:pw("current"),password:pw("password")};bad=!body.current?"Enter your current password.":body.password.length<8?"Use a new password of at least 8 characters.":"";}
   else return;
@@ -1442,15 +1499,16 @@ async function act(a,el){
   if(a==="ask-decline"){S.confirm="decline:"+id;renderSheet();renderTrips();return;}
   if(a==="pw-toggle"){const i=el.parentElement.querySelector("input"),show=i.type==="password";i.type=show?"text":"password";el.textContent=show?"Hide":"Show";el.setAttribute("aria-label",show?"Hide password":"Show password");return;}
   if(a==="auth-login"||a==="auth-signup"||a==="auth-forgot"){S.authMode=a.slice(5);if(a==="auth-forgot")S.authMsg="";renderProfile(true);const i=$("#profile-body form input");if(i)i.focus();return;}
-  if(a==="login"){needLogin({hash:S.view==="profile"?"find":S.view==="chats"&&S.chatId?"chat="+S.chatId:S.view},"");return;}
+  if(a==="login"){needLogin({hash:S.view==="profile"?"find":S.view==="chats"&&S.chatId?"chat="+S.chatId:S.view==="track"&&S.trackId?"track="+S.trackId:S.view},"");return;}
   if(a==="play"){toggleAudio(id);return;}
   if(a==="copy-upi"){try{await navigator.clipboard.writeText(id);toast("UPI ID copied");}catch(_){toast("UPI ID: "+id,6000);}return;}
   if(a==="attach"){const i=$("#c-file");if(i)i.click();return;}
-  if(a==="test-mail"||a==="test-sms"){const out=$("#setup-out");if(out)out.textContent="Sending…";
-    try{const d=await api("POST","/api/auth",{action:a==="test-mail"?"testmail":"testsms"});if(out)out.textContent=d.message;}
+  if(a==="test-mail"||a==="test-sms"||a==="test-wa"){const out=$("#setup-out");if(out)out.textContent="Sending…";
+    try{const d=await api("POST","/api/auth",{action:{"test-mail":"testmail","test-sms":"testsms","test-wa":"testwa"}[a]});if(out)out.textContent=d.message;}
     catch(x){if(out)out.textContent=x.message;}return;}
   if(a==="share-start"){startSharing(id||(r&&r.id));return;}
   if(a==="share-stop"){stopSharing();toast("Stopped sharing your location");return;}
+  if(a==="trk-fit"){TV.fitted=false;drawTrack();return;}
   if(a==="search-route"){const x=rideById(id);if(x){setPlace($("#s-from"),x.from,x.fromPt);setPlace($("#s-to"),x.to,x.toPt);$("#s-date").value="";readSearch();go("find");renderFind();setTimeout(()=>$("#r-title").scrollIntoView({block:"start"}),60);}return;}
   if(a==="chat-back"){location.hash="chats";return;}
   if(a==="chat-ride"){go("find",id);return;}
@@ -1478,13 +1536,14 @@ async function act(a,el){
       const n=Math.min(S.bookN,seatsLeft(r));if(n<1)throw new Error("Every seat on this ride is taken.");
       await requestSeats(r,n,msg);
       toast("Request sent to "+first(r.driverName)+". You’ll hear back once they confirm.",5000);
-    }else if(a==="cancel-booking"&&r){const b=myBooking(r.id);if(b){await cancelBooking(b);toast(b.status==="confirmed"?"Seat cancelled":"Request cancelled");}}
-    else if(a==="cancel-ride"&&r){await cancelRide(r);toast("Ride cancelled");}
+    }else if(a==="cancel-booking"&&r){const b=myBooking(r.id);if(b){if(TRK.rideId===r.id)stopSharing(true);await cancelBooking(b);toast(b.status==="confirmed"?"Seat cancelled":"Request cancelled");}}
+    else if(a==="cancel-ride"&&r){if(TRK.rideId===r.id)stopSharing(true);await cancelRide(r);toast("Ride cancelled");}
     else if(a==="accept"||a==="decline"){
       const b=S.bookings.find(x=>x.id===id);
       if(b){const d=await answerRequest(b,a);
         const told=[d.emailed&&"emailed",d.texted&&"sent an SMS"].filter(Boolean);
-        toast(a==="decline"?"Request declined":told.length?"Confirmed. "+first(b.name)+" was "+told.join(" and ")+(d.textedAlt?", and their family contact got the trip details by SMS.":"."):"Confirmed. Send "+first(b.name)+" a WhatsApp message so they know.",6500);}
+        const fam=d.whatsappAlt?" Their family contact got your details and a live trip link on WhatsApp.":d.textedAlt?" Their family contact got your details and a live trip link by SMS.":"";
+        toast(a==="decline"?"Request declined":(told.length?"Confirmed. "+first(b.name)+" was "+told.join(" and ")+".":"Confirmed. Send "+first(b.name)+" a WhatsApp message so they know.")+fam,6500);}
     }
     S.confirm=null;
   }catch(x){
@@ -1545,13 +1604,14 @@ function payHTML(r,b,dn){
   return h;
 }
 
-/* ---------- site setup checks for the owner (email and SMS) ---------- */
+/* ---------- site setup checks for the owner (email, SMS and WhatsApp) ---------- */
 function setupHTML(){
   const f=S.features;
   const row=(name,on,offText,act)=>'<div class="setup"><div><b>'+name+"</b><span>"+(on?"On":offText)+'</span></div><button type="button" class="btn ghost sm" data-act="'+act+'"'+(on?"":" disabled")+">Send test</button></div>";
   return'<div class="card"><div class="eyebrow">Notifications · only you see this</div>'
     +row("Email",f.email,"Off. Add SMTP_USER, SMTP_PASS and MAIL_FROM in Vercel, then redeploy.","test-mail")
     +row("SMS",f.sms,"Off. Add SMSGATE_USER and SMSGATE_PASS in Vercel, then redeploy.","test-sms")
+    +row("WhatsApp",f.wa,"Off. Riders send their trip link on WhatsApp in one tap. To send it automatically, add WHATSAPP_TOKEN and WHATSAPP_PHONE_ID in Vercel (see the README), then redeploy.","test-wa")
     +'<p class="hint" id="setup-out" role="status"></p></div>';
 }
 
@@ -1598,70 +1658,98 @@ function cancelledHTML(r,b,inTrips){
     +'<button type="button" class="btn ghost'+(inTrips?"":" wide")+'" data-act="search-route" data-id="'+esc(r.id)+'">'+ICON.road+"Search this route</button>";
 }
 
-/* ---------- live location: the driver shares, confirmed riders follow on a map ---------- */
+/* ---------- live location: only while a seat is confirmed. The driver and the riders share; the map shows everyone ---------- */
 const agoS=s=>s<5?"just now":s<60?s+" s ago":Math.round(s/60)+" min ago";
 const fmtKm=km=>km<1?Math.max(10,Math.round(km*100)*10)+" m":(km<10?km.toFixed(1):Math.round(km))+" km";
 const clockIn=min=>{const d=new Date(Date.now()+min*60000);return pad(d.getHours())+":"+pad(d.getMinutes());};
 /* Sharing is offered from 6 hours before departure until 3 hours after the expected arrival */
 function shareWindow(r){if(!r||r.status!=="open"||!r.date)return false;const s=startMs(r),now=Date.now();return now>=s-6*3600000&&now<=s+((r.dur||240)+180)*60000;}
-const TRK={rideId:null,watch:null,last:null,lastSent:0,sentPt:null,wake:null,err:"",sending:false};
+/* Who can share on this ride: the driver once a rider's seat is confirmed, a rider while their own seat is confirmed */
+function shareRole(r){if(!r||r.status!=="open"||!S.user)return"";if(r.mine)return r.taken>0?"driver":"";const b=myBooking(r.id);return b&&b.status==="confirmed"?"passenger":"";}
+const canShare=r=>!!shareRole(r)&&shareWindow(r);
+const TRK={rideId:null,role:"",watch:null,last:null,lastSent:0,sentPt:null,wake:null,err:"",sending:false};
 function liveCardHTML(r){
-  if(r.status!=="open")return"";
-  if(!shareWindow(r))return startMs(r)>Date.now()?'<p class="hint">On the day of the ride you can share your live location, so confirmed riders can see where you are.</p>':"";
+  if(!r||r.status!=="open")return"";
+  const role=shareRole(r),dn=esc(first(r.driverName));
+  if(!role)return r.mine&&shareWindow(r)?'<p class="hint">Live location turns on once you confirm a rider. Only riders with a confirmed seat can see it.</p>':"";
+  if(!shareWindow(r))return startMs(r)>Date.now()?'<p class="hint">On the day of the ride you can share your live location'+(role==="driver"?", so your confirmed riders can see where you are.":" with "+dn+(altOn()?" and "+esc(altWho()):"")+".")+"</p>":"";
+  const to=role==="driver"?"your riders":dn+(altOn()?" and "+esc(altWho()):"");
   if(TRK.rideId===r.id){const sent=TRK.lastSent?"Location sent "+agoS(Math.round((Date.now()-TRK.lastSent)/1000)):"Finding your location…";
-    return'<div class="share live"><div><b><span class="pulse"></span>Sharing your live location</b><span>'+esc(TRK.err||sent)+". Keep Saathi open on screen while you drive.</span></div>"
+    return'<div class="share live"><div><b><span class="pulse"></span>Sharing your live location with '+to+"</b><span>"+esc(TRK.err||sent)+". Keep Saathi open on screen "+(role==="driver"?"while you drive":"during the trip")+".</span></div>"
       +'<div class="row"><a class="btn ghost sm" href="#track='+esc(r.id)+'">'+ICON.pin+'See map</a><button type="button" class="btn danger solid sm" data-act="share-stop">Stop sharing</button></div></div>';}
-  return'<div class="share"><div><b>Share live location</b><span>Riders with a confirmed seat can follow you on a map and see how far away you are, like a delivery app.</span></div>'
-    +'<button type="button" class="btn primary sm" data-act="share-start" data-id="'+esc(r.id)+'">'+ICON.locate+"Start sharing</button></div>";
+  const why=role==="driver"?"Your confirmed riders follow you on a map and see how far away you are. You see each rider who shares their location, so pickup is easy."
+    :dn+" sees where you are, so pickup is easy."+(altOn()?" "+esc(altWho())+" can follow your trip from the link you send.":"");
+  return'<div class="share"><div><b>Share your live location</b><span>'+why+"</span></div>"
+    +'<button type="button" class="btn primary sm" data-act="share-start" data-id="'+esc(r.id)+'">'+ICON.locate+(role==="driver"?"Start sharing":"Share my location")+"</button></div>";
 }
 async function keepAwake(){try{if(navigator.wakeLock&&TRK.rideId&&!TRK.wake&&!document.hidden){TRK.wake=await navigator.wakeLock.request("screen");TRK.wake.addEventListener("release",()=>{TRK.wake=null;});}}catch(_){}}
-function startSharing(id){
-  const r=rideById(id);if(!r||!r.mine)return;
-  if(!navigator.geolocation)return toast("This browser can’t share your location.",5000);
-  if(!ready())return toast("Connect to the internet to share your location.");
+function startSharing(id,quiet){
+  const r=rideById(id),role=shareRole(r);
+  if(!role||!shareWindow(r)){if(!quiet)toast(r&&r.mine&&!r.taken?"Live location turns on once you confirm a rider.":"Live location is for confirmed rides, on the day of travel.",5000);return;}
+  if(!navigator.geolocation){if(!quiet)toast("This browser can’t share your location.",5000);return;}
+  if(!ready()){if(!quiet)toast("Connect to the internet to share your location.");return;}
   if(TRK.rideId&&TRK.rideId!==id)stopSharing();
   if(TRK.watch!=null)navigator.geolocation.clearWatch(TRK.watch);
-  Object.assign(TRK,{rideId:id,err:"",last:null,lastSent:0,sentPt:null});
+  Object.assign(TRK,{rideId:id,role,err:"",last:null,lastSent:0,sentPt:null});
   TRK.watch=navigator.geolocation.watchPosition(onPos,e=>{
     TRK.err=e.code===1?"Location is blocked. Allow it for this site in your browser settings":"Can’t get your location right now";
-    renderLiveBar();renderSheet();if(e.code===1)stopSharing(true);
+    if(e.code===1){toast(TRK.err+".",6000);stopSharing(true);}else{renderLiveBar();renderSheet();refreshTrack();}
   },{enableHighAccuracy:true,maximumAge:5000,timeout:30000});
-  keepAwake();store.set("saathi.sharing",id);renderLiveBar();renderSheet();
-  toast("Sharing your live location. Keep Saathi open while you drive.",5000);
+  keepAwake();store.set("saathi.sharing",id);renderLiveBar();renderSheet();refreshTrack();
+  if(!quiet)toast(role==="driver"?"Sharing your live location. Keep Saathi open while you drive.":"Sharing your live location with "+first(r.driverName)+(altOn()?" and "+altWho():"")+". Keep Saathi open during the trip.",5000);
 }
 function onPos(p){
-  TRK.last={pt:[p.coords.latitude,p.coords.longitude],acc:p.coords.accuracy,heading:p.coords.heading,speed:p.coords.speed};
+  TRK.last={pt:[p.coords.latitude,p.coords.longitude],acc:p.coords.accuracy,heading:p.coords.heading,speed:p.coords.speed,at:Date.now()};
   if(TRK.err&&!/blocked/.test(TRK.err))TRK.err="";
   const now=Date.now(),moved=TRK.sentPt?gcKm(TRK.sentPt,TRK.last.pt)*1000:1e9;
   if(now-TRK.lastSent>=12000||(moved>=30&&now-TRK.lastSent>=4000))sendPos();
+  if(S.view==="track"&&TV.kind==="ride"&&TV.id===TRK.rideId)refreshTrack();
 }
 async function sendPos(){
   if(!TRK.last||!TRK.rideId||TRK.sending||!ready())return;
   TRK.sending=true;const l=TRK.last,id=TRK.rideId;
   try{await api("POST","/api/track",{rideId:id,lat:l.pt[0],lon:l.pt[1],acc:l.acc,heading:l.heading,speed:l.speed});TRK.lastSent=Date.now();TRK.sentPt=l.pt;TRK.err="";}
-  catch(x){TRK.err=x.message.replace(/\.$/,"");if(["cancelled","not_yours","not_today","signed_out"].includes(x.code))stopSharing(true);}
-  finally{TRK.sending=false;renderLiveBar();if($("#sheet-card")&&S.openId===id)renderSheet();if(S.view==="track"&&TV.id===id)pollTrack();}
+  catch(x){TRK.err=x.message.replace(/\.$/,"");
+    if(["cancelled","not_yours","not_today","signed_out","no_riders"].includes(x.code)&&TRK.rideId===id){stopSharing(true);toast("Stopped sharing your location. "+x.message,6000);}}
+  finally{TRK.sending=false;renderLiveBar();if(S.openId===id)renderSheet();refreshTrack();}
 }
 function stopSharing(silent){
   const id=TRK.rideId;if(TRK.watch!=null)navigator.geolocation.clearWatch(TRK.watch);
-  Object.assign(TRK,{watch:null,rideId:null,last:null,sentPt:null,lastSent:0});
+  Object.assign(TRK,{watch:null,rideId:null,role:"",last:null,sentPt:null,lastSent:0});
   if(TRK.wake){TRK.wake.release().catch(()=>{});TRK.wake=null;}
   try{localStorage.removeItem("saathi.sharing");}catch(_){}
   if(id&&!silent&&ready())api("DELETE","/api/track?ride="+encodeURIComponent(id)).catch(()=>{});
-  renderLiveBar();renderSheet();if(S.view==="track")pollTrack();
+  renderLiveBar();renderSheet();if(S.view==="track"){refreshTrack();pollTrack();}
+}
+/* Sharing stops by itself once the ride isn't confirmed any more (cancelled, or no confirmed rider) or the trip is over */
+function checkSharing(){
+  if(!TRK.rideId||!ready()||!S.user)return;const r=rideById(TRK.rideId);if(canShare(r))return;
+  const why=!r||r.status!=="open"?"The ride was cancelled.":!shareRole(r)?(r.mine?"No rider’s seat is confirmed now.":"Your seat isn’t confirmed any more."):"The trip is over.";
+  stopSharing();toast("Stopped sharing your location. "+why,6000);
+}
+/* After Saathi was closed: carry on by itself if location is already allowed, otherwise the bar offers Resume */
+function resumeSharing(){
+  if(TRK.rideId||!S.user||!ready())return;const id=store.get("saathi.sharing"),r=id&&rideById(id);
+  if(!id)return;if(!r||!canShare(r)){try{localStorage.removeItem("saathi.sharing");}catch(_){}renderLiveBar();return;}
+  if(navigator.permissions&&navigator.permissions.query)navigator.permissions.query({name:"geolocation"}).then(p=>{if(p.state==="granted"&&!TRK.rideId)startSharing(id,true);}).catch(()=>{});
 }
 function renderLiveBar(){
   const el=$("#livebar");if(!el)return;let html="";
   if(TRK.rideId){const r=rideById(TRK.rideId),sent=TRK.lastSent?"Sent "+agoS(Math.round((Date.now()-TRK.lastSent)/1000)):"Finding your location…";
-    html='<span class="pulse"></span><div class="grow"><b>Sharing live location'+(r?" · "+esc(r.from.split(",")[0])+" → "+esc(r.to.split(",")[0]):"")+"</b><small>"+esc(TRK.err||sent)+". Keep Saathi open while you drive.</small></div>"
+    html='<span class="pulse"></span><div class="grow"><b>Sharing live location'+(r?" · "+esc(r.from.split(",")[0])+" → "+esc(r.to.split(",")[0]):"")+"</b><small>"+esc(TRK.err||sent)+". Keep Saathi open "+(TRK.role==="driver"?"while you drive":"during the trip")+".</small></div>"
       +'<a class="btn sm ghost" href="#track='+esc(TRK.rideId)+'">Map</a><button type="button" class="btn sm danger solid" data-act="share-stop">Stop</button>';}
   else if(S.user){const id=store.get("saathi.sharing"),r=id&&rideById(id);
-    if(r&&r.mine&&shareWindow(r))html='<span class="pulse off"></span><div class="grow"><b>Live location paused</b><small>Saathi was closed. Resume so your riders can keep following you.</small></div><button type="button" class="btn sm primary" data-act="share-start" data-id="'+esc(r.id)+'">Resume</button>';}
+    if(r&&canShare(r))html='<span class="pulse off"></span><div class="grow"><b>Live location paused</b><small>Saathi was closed. Resume so '+(r.mine?"your riders":esc(first(r.driverName))+(altOn()?" and "+esc(altWho()):""))+" can keep following you.</small></div>"
+      +'<button type="button" class="btn sm primary" data-act="share-start" data-id="'+esc(r.id)+'">Resume</button>';}
   if(el.dataset.k!==html){el.dataset.k=html;el.innerHTML=html;}el.hidden=!html;
 }
 
-/* the tracking page: a map with the driver, the pickup and the destination */
-const TV={id:null,map:null,mk:{},timer:null,data:null,at:0,eta:null,etaAt:0,etaPh:"",busy:false,err:"",fitted:false,key:""};
+/* ---------- the live map, like a ride app: the route on the road, how far away, and when they arrive ----------
+   Three ways in: the driver (#track=ride: every confirmed rider), a rider (#track=ride: the driver), and a
+   rider's family contact through the trip link (#live=token, no login: the driver and that rider). */
+const TV={kind:"",id:null,map:null,mk:{},lines:{},timer:null,data:null,ride:null,at:0,busy:false,err:"",fitted:false,key:"",hadDrv:false,
+  rt:null,rtKey:"",rtAt:0,rtFrom:null,rtBusy:false,plan:null,planBusy:false,far:{},hd:null,prevDrv:null};
+const FRESH=3*60000;
 let leafletP=null;
 function loadLeaflet(){
   if(window.L&&window.L.map)return Promise.resolve(window.L);if(leafletP)return leafletP;
@@ -1672,9 +1760,15 @@ function loadLeaflet(){
   });
   return leafletP;
 }
-function trackRide(){return rideById(TV.id);}
+function tvRide(){return TV.kind==="live"?TV.ride:rideById(TV.id);}
+function tvMode(r){return TV.kind==="live"?"family":r&&r.mine?"driver":"passenger";}
+function liveRide(d){const x=(d&&d.ride)||{},dr=(d&&d.driver)||{};
+  return normRide(Object.assign({},x,{id:"live",driverName:dr.name,driverPhoto:dr.photo,status:d&&d.status==="cancelled"?"cancelled":"open"}));}
+function refreshTrack(){if(S.view==="track"){drawTrack();renderTrackInfo();}}
 function openTrackView(){
-  if(TV.id!==S.trackId){if(TV.map){TV.map.remove();TV.map=null;}Object.assign(TV,{id:S.trackId,mk:{},data:null,at:0,eta:null,etaAt:0,etaPh:"",err:"",fitted:false,key:""});}
+  const kind=S.liveToken?"live":"ride",id=S.liveToken||S.trackId;
+  if(TV.kind!==kind||TV.id!==id){if(TV.map){TV.map.remove();TV.map=null;}
+    Object.assign(TV,{kind,id,mk:{},lines:{},data:null,ride:null,at:0,err:"",fitted:false,key:"",hadDrv:false,rt:null,rtKey:"",rtAt:0,rtFrom:null,plan:null,far:{},hd:null,prevDrv:null});}
   renderTrackView();
   clearInterval(TV.timer);TV.timer=setInterval(()=>{if(!document.hidden)pollTrack();else renderTrackInfo();},5000);
   pollTrack();
@@ -1682,12 +1776,18 @@ function openTrackView(){
 function closeTrackView(){clearInterval(TV.timer);TV.timer=null;}
 function renderTrackView(){
   const el=$("#track-body");if(!el||!TV.id)return;
-  const r=trackRide(),k=S.user?(r?"ride":"none"):"out";
-  if(TV.key!==k){TV.key=k;if(TV.map){TV.map.remove();TV.map=null;TV.mk={};TV.fitted=false;}
-    if(!S.user)el.innerHTML='<div class="empty"><b>Log in to see live location</b><span>Live tracking is for riders with a confirmed seat.</span><button type="button" class="btn primary" data-act="login">Log in</button></div>';
-    else if(!r)el.innerHTML='<p class="loading">'+(S.mode==="loading"?"Loading…":"This ride isn’t available.")+"</p>";
-    else{el.innerHTML='<div class="trk-head"><a class="x" href="#trips" aria-label="Back to my trips">'+ICON.back+'</a><div><div class="eyebrow">Live location</div><h1 class="h2">'+esc(r.from.split(",")[0])+" to "+esc(r.to.split(",")[0])+'</h1></div></div>'
-      +'<div class="trk"><div class="trk-status" id="trk-status" aria-live="polite"></div><div class="trk-map" id="trk-map" role="img" aria-label="Map with the driver, the pickup point and the destination"></div><div class="trk-side" id="trk-info"></div></div>';
+  const r=tvRide(),live=TV.kind==="live";
+  const k=live?(r?"ride":TV.err?"err:"+TV.err:"wait"):!S.user?"out":r?"ride":"none";
+  if(TV.key!==k){TV.key=k;if(TV.map){TV.map.remove();TV.map=null;TV.mk={};TV.lines={};TV.fitted=false;}
+    if(k==="out")el.innerHTML='<div class="empty"><b>Log in to see live location</b><span>Live tracking is for the driver and riders with a confirmed seat.</span><button type="button" class="btn primary" data-act="login">Log in</button></div>';
+    else if(k==="none")el.innerHTML='<p class="loading">'+(S.mode==="loading"?"Loading…":"This ride isn’t available.")+"</p>";
+    else if(k==="wait")el.innerHTML='<p class="loading">Loading the trip…</p>';
+    else if(k!=="ride")el.innerHTML='<div class="empty"><b>Can’t show this trip</b><span>'+esc(TV.err)+'</span><a class="btn ghost" href="#find">Open Saathi</a></div>';
+    else{
+      const pn=live?first(TV.data&&TV.data.passenger&&TV.data.passenger.name):"";
+      el.innerHTML='<div class="trk-head">'+(live?"":'<a class="x" href="#trips" aria-label="Back to my trips">'+ICON.back+"</a>")+'<div><div class="eyebrow">'+(live?esc(pn)+"’s trip · live":"Live location")+'</div><h1 class="h2">'+esc(r.from.split(",")[0])+" to "+esc(r.to.split(",")[0])+"</h1></div></div>"
+        +'<div class="trk"><div class="trk-status" id="trk-status" aria-live="polite"></div><div class="trk-mapw"><div class="trk-map" id="trk-map" role="img" aria-label="Map of the trip with live locations, the pickup point and the destination"></div>'
+        +'<button type="button" class="recenter" data-act="trk-fit" aria-label="Show everyone on the map" title="Show everyone">'+ICON.locate+'</button></div><div class="trk-side" id="trk-info"></div></div>';
       loadLeaflet().then(()=>{initMap();}).catch(x=>{const m=$("#trk-map");if(m)m.innerHTML='<p class="hint" style="padding:18px">'+esc(x.message)+"</p>";});}
   }
   renderTrackInfo();
@@ -1699,70 +1799,202 @@ function initMap(){
   Lf.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(TV.map);
   drawTrack();
 }
+const lineKm=l=>{let s=0;for(let i=1;i<l.length;i++)s+=gcKm(l[i-1],l[i]);return s;};
+function bearing(a,b){const q=x=>x*Math.PI/180,y=Math.sin(q(b[1]-a[1]))*Math.cos(q(b[0])),x=Math.cos(q(a[0]))*Math.sin(q(b[0]))-Math.sin(q(a[0]))*Math.cos(q(b[0]))*Math.cos(q(b[1]-a[1]));return(Math.atan2(y,x)*180/Math.PI+360)%360;}
+/* What's left of the route from where the vehicle is now */
+function trimLine(line,pt){
+  if(!line||line.length<2)return[pt];let bi=0,bd=Infinity;
+  for(let i=0;i<line.length;i++){const d=gcKm(pt,line[i]);if(d<bd){bd=d;bi=i;}}
+  const nx=line[bi+1],start=nx&&gcKm(pt,nx)<gcKm(line[bi],nx)?bi+1:bi;
+  return[pt].concat(line.slice(start));
+}
+/* Glide a marker to its new place instead of jumping */
+function glide(m,to){
+  const f=m.getLatLng(),a=[f.lat,f.lng],d=gcKm(a,to);cancelAnimationFrame(m._raf);
+  if(d<0.001||d>3||document.hidden||matchMedia("(prefers-reduced-motion: reduce)").matches){m.setLatLng(to);return;}
+  const t0=performance.now(),D=1100;
+  const step=t=>{const k=Math.min(1,(t-t0)/D),e=k*(2-k);m.setLatLng([a[0]+(to[0]-a[0])*e,a[1]+(to[1]-a[1])*e]);if(k<1)m._raf=requestAnimationFrame(step);};
+  m._raf=requestAnimationFrame(step);
+}
+/* Where everyone is. This phone's own GPS beats the copy on the server. */
+function tvPoints(){
+  const r=tvRide(),d=TV.data,mode=tvMode(r),now=Date.now(),lag=d?now-TV.at:0;
+  const P={r,mode,drv:null,drvHd:null,drvAge:null,pas:null,pasAge:null,pax:[]};
+  if(!d||!r)return P;
+  const take=(l,k)=>{if(l&&l.lat!=null){P[k]=[l.lat,l.lon];P[k+"Age"]=l.age+lag;if(k==="drv")P.drvHd=l.heading;}};
+  const own=TRK.rideId===r.id&&TRK.last;
+  if(mode==="family"){take(d.driver&&d.driver.loc,"drv");take(d.passenger&&d.passenger.loc,"pas");}
+  else if(mode==="driver"){
+    if(own){P.drv=TRK.last.pt;P.drvAge=now-TRK.last.at;P.drvHd=TRK.last.heading;}else if(d.sharing)take(d.loc,"drv");
+    P.pax=(d.passengers||[]).map(p=>Object.assign({},p,{pt:p.loc?[p.loc.lat,p.loc.lon]:null,age:p.loc?p.loc.age+lag:null}));
+  }else{
+    if(d.sharing)take(d.loc,"drv");
+    if(own){P.pas=TRK.last.pt;P.pasAge=now-TRK.last.at;}else take(d.me&&d.me.loc,"pas");
+  }
+  return P;
+}
+/* Where the trip is at: "coming" to pick up, "pickup", "trip" to the destination, or "arrived" */
+function phase(r,drv,pas){
+  const dD=r.toPt?gcKm(drv,r.toPt):null;if(dD!=null&&dD<0.5)return"arrived";
+  const dF=r.fromPt?gcKm(drv,r.fromPt):null,total=r.fromPt&&r.toPt?gcKm(r.fromPt,r.toPt):null;
+  const away=Date.now()>=startMs(r)-5*60000&&dD!=null&&total!=null&&dD<total-0.5&&(dF==null||dF>0.8);
+  if(pas)return gcKm(drv,pas)<0.25?(away?"trip":"pickup"):"coming";
+  if(dF!=null&&dF<0.35)return"pickup";
+  return away?"trip":"coming";
+}
+/* What the vehicle is heading for next. For the driver: the nearest rider still waiting, then the pickup, then the destination. */
+function tvPlan(P){
+  const r=P.r;if(!r||!P.drv)return null;
+  if(P.mode==="driver"){
+    const next=P.pax.filter(p=>p.pt&&p.age<FRESH).map(p=>Object.assign(p,{km:gcKm(P.drv,p.pt)})).filter(p=>p.km>=0.25).sort((a,b)=>a.km-b.km)[0];
+    if(next)return{ph:"coming",to:next.pt,who:next};
+    const ph=phase(r,P.drv,null);return{ph,to:ph==="trip"?r.toPt:ph==="coming"?r.fromPt:null};
+  }
+  const pas=P.pas&&P.pasAge<FRESH?P.pas:null,ph=phase(r,P.drv,pas);
+  return{ph,to:ph==="trip"?r.toPt:ph==="coming"?(pas||r.fromPt):null,toPas:ph==="coming"&&!!pas};
+}
+const planKey=p=>p&&p.to?p.ph+":"+p.to.map(x=>x.toFixed(3)).join(","):"";
+function estimate(r,a,b){const km=gcKm(a,b)*1.3;return{km,min:Math.max(1,Math.round(km/(r.vehicle==="bike"?28:35)*60))};}
+/* The road route from OSRM, with its shape */
+async function osrmRoute(a,b){
+  const j=await (await fetch(GEO.osrm+"/route/v1/driving/"+a[1]+","+a[0]+";"+b[1]+","+b[0]+"?overview="+(gcKm(a,b)>80?"simplified":"full")+"&geometries=geojson")).json();
+  const rt=j&&j.routes&&j.routes[0];if(!rt)return null;
+  return{km:rt.distance/1000,min:Math.max(1,Math.round(rt.duration/60*1.15)),line:((rt.geometry&&rt.geometry.coordinates)||[]).map(c=>[c[1],c[0]])};
+}
+/* Fetch the route again when the target changes, every 30 s, or after 300 m off the last one */
+function wantRoute(P,plan){
+  const k=planKey(plan);if(!k||TV.rtBusy)return;
+  const age=Date.now()-TV.rtAt,moved=TV.rtFrom?gcKm(TV.rtFrom,P.drv):1e9;
+  if(age<4000||(k===TV.rtKey&&age<30000&&moved<0.3))return;
+  TV.rtBusy=true;TV.rtAt=Date.now();const id=TV.id,from=P.drv;
+  osrmRoute(from,plan.to).then(x=>{if(TV.id===id&&x){TV.rt=Object.assign(x,{key:k});TV.rtKey=k;TV.rtFrom=from;}})
+    .catch(()=>{}).finally(()=>{TV.rtBusy=false;if(TV.id===id)refreshTrack();});
+}
+/* Before anyone is moving: the planned route from pickup to destination, dotted */
+function wantPlan(r){
+  if(TV.plan||TV.planBusy||!r.fromPt||!r.toPt||gcKm(r.fromPt,r.toPt)>1500)return;
+  TV.planBusy=true;const id=TV.id,fb={line:[r.fromPt,r.toPt]};
+  osrmRoute(r.fromPt,r.toPt).then(x=>{if(TV.id===id)TV.plan=x||fb;}).catch(()=>{if(TV.id===id)TV.plan=fb;}).finally(()=>{TV.planBusy=false;if(TV.id===id)drawTrack();});
+}
 function drawTrack(){
-  const Lf=window.L,map=TV.map,r=trackRide();if(!map||!r)return;
-  const put=(k,pt,icon,title)=>{if(!pt){if(TV.mk[k]){TV.mk[k].remove();delete TV.mk[k];}return;}
-    if(TV.mk[k])TV.mk[k].setLatLng(pt);else TV.mk[k]=Lf.marker(pt,{icon,title,keyboard:false}).addTo(map);};
+  const Lf=window.L,map=TV.map,r=tvRide();if(!map||!r||!Lf)return;
+  const P=tvPoints(),plan=tvPlan(P);
+  const put=(k,pt,icon,title,z)=>{const m=TV.mk[k];if(!pt){if(m){m.remove();delete TV.mk[k];}return null;}
+    if(m){glide(m,pt);return m;}return TV.mk[k]=Lf.marker(pt,{icon,title,keyboard:false,zIndexOffset:z||0}).addTo(map);};
+  const line=(k,pts,styles)=>{const l=TV.lines[k];if(!pts||pts.length<2){if(l){l.forEach(x=>x.remove());delete TV.lines[k];}return;}
+    if(l)l.forEach(x=>x.setLatLngs(pts));else TV.lines[k]=styles.map(s=>Lf.polyline(pts,Object.assign({interactive:false},s)).addTo(map));};
   put("from",r.fromPt,divIcon("pin from","",22),"Pickup: "+r.from);
   put("to",r.toPt,divIcon("pin to","",22),"Destination: "+r.to);
-  const d=TV.data,drv=d&&d.sharing&&d.loc?[d.loc.lat,d.loc.lon]:null;
-  put("drv",drv,divIcon("drv",'<span class="ring"></span><span class="core">'+(r.vehicle==="bike"?ICON.bike:ICON.car)+"</span>",46),r.driverName);
-  if(drv&&TV.mk.drv)TV.mk.drv.setZIndexOffset(1000);
-  const pts=[drv,r.fromPt].filter(Boolean);if(!drv&&r.toPt)pts.push(r.toPt);
-  if(!TV.fitted&&pts.length){if(pts.length===1)map.setView(pts[0],14);else map.fitBounds(pts,{padding:[50,50],maxZoom:15});TV.fitted=true;}
-  else if(drv&&!map.getBounds().pad(-.1).contains(drv))map.panTo(drv);
+  if(!P.drv){wantPlan(r);line("plan",TV.plan&&TV.plan.line,[{color:"#56675e",weight:4,opacity:.75,dashArray:"1 9",lineCap:"round"}]);}else line("plan",null);
+  let route=null;
+  if(P.drv&&plan&&plan.to){wantRoute(P,plan);if(TV.rt&&TV.rt.key===planKey(plan))route=trimLine(TV.rt.line,P.drv);}
+  line("route",route,[{color:"#ffffff",weight:9,opacity:.95},{color:"#0b7a4b",weight:5,opacity:1}]);
+  const dm=put("drv",P.drv,divIcon("drv",'<span class="ring"></span><span class="hd"></span><span class="core">'+(r.vehicle==="bike"?ICON.bike:ICON.car)+"</span>",46),r.driverName,1000);
+  if(dm){
+    const moved=TV.prevDrv?gcKm(TV.prevDrv,P.drv):0,gps=typeof P.drvHd==="number"&&isFinite(P.drvHd)?P.drvHd:null;
+    const hd=gps!=null?gps:moved>0.02?bearing(TV.prevDrv,P.drv):null;
+    if(!TV.prevDrv||moved>0.02)TV.prevDrv=P.drv;if(hd!=null)TV.hd=hd;
+    const el=dm.getElement();if(el){el.classList.toggle("nohd",TV.hd==null);const h=el.querySelector(".hd");if(h&&TV.hd!=null)h.style.transform="rotate("+Math.round(TV.hd)+"deg)";}
+  }
+  if(P.mode==="driver"){
+    const seen=new Set();
+    P.pax.forEach(p=>{if(!p.pt)return;const k="p:"+p.id,ph=mediaPath(p.photo);seen.add(k);
+      const m=put(k,p.pt,divIcon("pax",'<span class="face" style="background:'+avColor(p.name)+'">'+(ph?'<img src="'+esc(ph)+'" alt="">':esc(initials(p.name)))+'</span><span class="lbl">'+esc(first(p.name))+"</span>",36),p.name,500);
+      const el=m&&m.getElement();if(el)el.classList.toggle("stale",p.age>=FRESH);});
+    Object.keys(TV.mk).forEach(k=>{if(k.startsWith("p:")&&!seen.has(k)){TV.mk[k].remove();delete TV.mk[k];}});
+  }else{const nm=P.mode==="family"?first(TV.data.passenger&&TV.data.passenger.name):"You";
+    put("pas",P.pas,divIcon("me",'<span class="halo"></span><span class="dot"></span><span class="lbl">'+esc(nm)+"</span>",30),nm,800);}
+  const pts=[P.drv,plan&&plan.to,P.pas].concat(P.pax.map(p=>p.pt)).filter(Boolean);
+  if(!P.drv){if(r.fromPt)pts.push(r.fromPt);if(r.toPt)pts.push(r.toPt);}
+  if(!TV.fitted&&pts.length){if(pts.length===1)map.setView(pts[0],15);else map.fitBounds(pts,{padding:[50,50],maxZoom:16});TV.fitted=true;}
+  else if(P.drv&&!map.getBounds().pad(-.1).contains(P.drv))map.panTo(P.drv);
 }
 async function pollTrack(){
-  const id=TV.id;if(!id||!S.user||!ready()||TV.busy){renderTrackInfo();return;}TV.busy=true;
-  try{const d=await api("GET","/api/track?ride="+encodeURIComponent(id));if(TV.id!==id)return;
-    const was=TV.data&&TV.data.sharing;TV.data=d;TV.at=Date.now();TV.err="";if(d.sharing&&!was)TV.fitted=false;updateEta();}
-  catch(x){if(TV.id===id)TV.err=x.code==="not_found"?"Live location is only for the driver and riders with a confirmed seat.":x.message;}
-  finally{TV.busy=false;drawTrack();renderTrackInfo();}
+  const id=TV.id,live=TV.kind==="live";
+  if(!id||TV.busy||(!live&&(!S.user||!ready()))){renderTrackInfo();return;}
+  TV.busy=true;
+  try{const d=await api("GET","/api/track?"+(live?"share=":"ride=")+encodeURIComponent(id));if(TV.id!==id)return;
+    if(live)TV.ride=liveRide(d);
+    TV.data=d;TV.at=Date.now();TV.err="";
+    const has=!!tvPoints().drv;if(has&&!TV.hadDrv)TV.fitted=false;TV.hadDrv=has;}
+  catch(x){if(TV.id===id)TV.err=x.code==="not_found"?(live?"This trip link isn’t valid. Ask for a new one.":"Live location is only for the driver and riders with a confirmed seat."):x.message;}
+  finally{TV.busy=false;if(TV.id===id){if(live)renderTrackView();drawTrack();renderTrackInfo();}}
 }
-function phase(r,me){
-  const dP=r.fromPt?gcKm(me,r.fromPt):null,dD=r.toPt?gcKm(me,r.toPt):null,total=r.fromPt&&r.toPt?gcKm(r.fromPt,r.toPt):null;
-  if(dD!=null&&dD<0.5)return"arrived";
-  if(dP!=null&&dP<0.35)return"pickup";
-  if(Date.now()>=startMs(r)-5*60000&&dD!=null&&total!=null&&dD<total-0.5&&(dP==null||dP>0.8))return"trip";
-  return"coming";
+/* The headline, like a ride app: who is how far, and when they get there */
+function tvStatus(P,plan){
+  const r=P.r,d=TV.data,live=TV.kind==="live",dn=first(r.driverName),pn=live&&d?first(d.passenger&&d.passenger.name):"",me=P.mode==="driver";
+  if(live&&d&&d.status==="ended")return{cls:"no",title:"This trip has ended",sub:"Live location isn’t shown any more."};
+  if(r.status==="cancelled"||(d&&d.status==="cancelled"))return{cls:"no",title:live?"This trip was cancelled":"This ride was cancelled",sub:live?pn+"’s seat or the ride was cancelled, so live location isn’t shown.":""};
+  if(TV.err&&!d)return{cls:"no",title:"Can’t show live location",sub:TV.err};
+  if(!d)return{cls:"wait",title:"Loading live location…"};
+  if(!P.drv){
+    if(me)return{cls:"wait",title:TRK.rideId===r.id?"Finding your location…":"You’re not sharing your location",sub:TRK.rideId===r.id?"Allow location if your browser asks.":canShare(r)?"Start sharing so your riders can follow you.":"Live location turns on once a rider’s seat is confirmed."};
+    if(P.mode==="family")return{cls:"wait",title:dn+" hasn’t started sharing yet",sub:P.pas?"The blue dot is "+pn+". "+dn+" shows up once they start sharing.":"The map shows the trip once "+dn+" or "+pn+" shares their location."};
+    return{cls:"wait",title:dn+" hasn’t started sharing yet",sub:"You’ll see "+dn+" on the map as soon as they start"+(S.features.email?". We’ll email you too.":".")};
+  }
+  let km=null,min=null;
+  if(plan.to){const rt=TV.rt&&TV.rt.key===planKey(plan)?TV.rt:null;
+    if(rt){km=lineKm(trimLine(rt.line,P.drv));min=Math.max(1,Math.round(rt.min*(rt.km>0.05?Math.min(1.5,km/rt.km):1)));}
+    else{const e=estimate(r,P.drv,plan.to);km=e.km;min=e.min;}}
+  const age=Math.round(P.drvAge/1000),to=r.to.split(",")[0],from=r.from.split(",")[0],o={cls:"ok",live:true,min:null,prog:null,sub:""};
+  if(plan.ph==="arrived")o.title=(P.mode==="family"?pn+" has arrived in ":"Arrived in ")+to;
+  else if(plan.ph==="pickup")o.title=me?"You’re at the pickup point":P.pas?(P.mode==="family"?dn+" has reached "+pn:dn+" is here"):dn+" is at the pickup point";
+  else if(km==null)o.title=(me?"You’re":dn+" is")+" on the way";
+  else if(plan.ph==="trip"){o.title=(P.mode==="family"?pn+" is on the way to ":"On the way to ")+to;o.sub=fmtKm(km)+" to go · arrives about "+clockIn(min);o.min=min;
+    if(r.km)o.prog={v:1-Math.min(1,km/r.km),a:from,b:to};}
+  else{
+    o.title=me?(plan.who?first(plan.who.name)+" is "+fmtKm(km)+" from you":"You’re "+fmtKm(km)+" from the pickup point")
+      :dn+" is "+fmtKm(km)+(plan.toPas?(P.mode==="family"?" from "+pn:" away"):" from the pickup point");
+    o.sub=(me?"About ":"Arriving in about ")+min+" min, around "+clockIn(min);o.min=min;
+    const fk=plan.who?plan.who.id:plan.toPas?"pas":"from";TV.far[fk]=Math.max(TV.far[fk]||0,km);
+    if(TV.far[fk]>0.4)o.prog={v:1-km/TV.far[fk],a:me?"You":dn,b:me?(plan.who?first(plan.who.name):"Pickup"):plan.toPas?(P.mode==="family"?pn:"You"):"Pickup"};}
+  o.sub=[o.sub,"Updated "+agoS(age)].filter(Boolean).join(" · ");
+  if(age>120){o.cls="wait";o.sub+=". "+(me?"Your":dn+"’s")+" phone may have lost signal or closed Saathi.";}
+  return o;
 }
-function estimate(r,me,ph){const t=ph==="trip"?r.toPt:r.fromPt;if(!t)return null;const km=gcKm(me,t)*1.3;return{ph,km,min:Math.max(1,Math.round(km/(r.vehicle==="bike"?28:35)*60))};}
-async function updateEta(){
-  const r=trackRide(),d=TV.data;if(!r||!d||!d.sharing||!d.loc)return;
-  const me=[d.loc.lat,d.loc.lon],ph=phase(r,me),t=ph==="trip"?r.toPt:r.fromPt;
-  if(!t||ph==="pickup"||ph==="arrived"||(ph===TV.etaPh&&Date.now()-TV.etaAt<30000))return;
-  TV.etaAt=Date.now();TV.etaPh=ph;
-  try{const j=await (await fetch(GEO.osrm+"/route/v1/driving/"+me[1]+","+me[0]+";"+t[1]+","+t[0]+"?overview=false")).json();
-    const rt=j&&j.routes&&j.routes[0];if(rt&&TV.etaPh===ph)TV.eta={ph,km:rt.distance/1000,min:Math.max(1,Math.round(rt.duration/60*1.15))};renderTrackInfo();}catch(_){}
+function paxRow(p,P){
+  let st;
+  if(p.pt&&p.age<FRESH){const km=P.drv?gcKm(P.drv,p.pt):null;st='<span class="pulse"></span>'+(km==null?"Sharing location":km<0.25?"With you":"About "+fmtKm(km)+" from you")+" · "+agoS(Math.round(p.age/1000));}
+  else st=p.pt?"Last seen "+agoS(Math.round(p.age/1000)):"Not sharing location";
+  const n=esc(first(p.name)),msg="Hi "+first(p.name)+", this is "+(S.user?first(S.user.name):"your driver")+" from Saathi. I’m on my way.";
+  return'<div class="pxr">'+avatarHTML({name:p.name,photo:mediaPath(p.photo)})+'<div class="nm"><b>'+esc(p.name)+" · "+plural(p.seats,"seat","seats")+"</b><span>"+st+"</span></div>"
+    +(p.phone?'<div class="acts"><a class="btn wa sm ic" href="'+esc(waUrl(p.phone,msg))+'" target="_blank" rel="noopener" aria-label="WhatsApp '+n+'">'+ICON.chat+'</a><a class="btn ghost sm ic" href="'+esc(telUrl(p.phone))+'" aria-label="Call '+n+'">'+ICON.phone+"</a></div>":"")+"</div>";
+}
+function tvInfo(P){
+  const r=P.r,d=TV.data,dn=first(r.driverName),arr=r.dur!=null?addTime(r.time,r.dur):null;
+  const veh=esc(r.vehicleName||(r.vehicle==="bike"?"Bike":"Car")),vi=r.vehicle==="bike"?ICON.bike:ICON.car;
+  const tl='<ol class="tl"><li class="from"><b>'+esc(r.time)+"</b><span>"+esc(r.from)+'</span></li><li class="to"><b>'+(arr?esc(arr.t):"—")+"</b><span>"+esc(r.to)+"</span></li></ol>";
+  const drvCard=(name,photo)=>'<div class="drv">'+avatarHTML({name,photo})+'<div class="who-t"><b>'+esc(name)+"</b><span>"+vi+veh+"</span></div></div>";
+  const callRow=(ph,text)=>ph?'<div class="row"><a class="btn wa" href="'+esc(waUrl(ph,text))+'" target="_blank" rel="noopener">'+ICON.chat+'WhatsApp</a><a class="btn ghost" href="'+esc(telUrl(ph))+'">'+ICON.phone+"Call</a></div>":"";
+  let h='<div class="card">';
+  if(P.mode==="family"){const dr=(d&&d.driver)||{},pn=first(d&&d.passenger&&d.passenger.name),dfn=first(dr.name||r.driverName);
+    h+='<div class="eyebrow">Driver</div>'+drvCard(dr.name||r.driverName,mediaPath(dr.photo));
+    if(dr.phone)h+='<p class="hint">'+esc(dfn)+"’s number: <b>"+esc(fmtPhone(dr.phone))+"</b></p>"+callRow(dr.phone,"Hi "+dfn+", I’m following "+pn+"’s Saathi trip with you.");
+    h+=tl+'<p class="hint">'+esc(pn)+" shared this trip with you from Saathi"+(d&&d.ride&&d.ride.seats?" ("+plural(d.ride.seats,"seat","seats")+", "+esc(shortDate(r.date))+")":"")+". "
+      +(P.pas?"The blue dot is "+esc(pn)+".":esc(pn)+" isn’t sharing their location right now.")+" Nothing is shown once the trip ends or is cancelled.</p>";
+  }else if(P.mode==="driver"){
+    h+=TRK.rideId===r.id?'<button type="button" class="btn danger wide" data-act="share-stop">Stop sharing</button>':(canShare(r)?'<button type="button" class="btn primary wide" data-act="share-start" data-id="'+esc(r.id)+'">'+ICON.locate+"Start sharing my location</button>":"");
+    h+='<div class="eyebrow">Your riders</div>'+(P.pax.length?'<div class="pxl">'+P.pax.map(p=>paxRow(p,P)).join("")+"</div>":'<p class="hint">'+(d?"No rider’s seat is confirmed.":"Loading…")+"</p>");
+    h+=tl+'<p class="hint">Riders with a confirmed seat see you on the map while you share, and each can send a trip link to one family contact. Riders who share their location show up here.</p>';
+  }else{const b=myBooking(r.id),alt=altOn()?" and "+esc(altWho()):"";
+    h+=drvCard(r.driverName,r.driverPhoto)+(b&&b.driverPhone?callRow(b.driverPhone,"Hi "+dn+", this is "+(S.user?S.user.name:"")+" from Saathi. I'm following your live location."):"");
+    if(TRK.rideId===r.id)h+='<div class="share live"><div><b><span class="pulse"></span>You’re sharing your location</b><span>'+esc(dn)+alt+' can see where you are.</span></div><button type="button" class="btn danger solid sm" data-act="share-stop">Stop sharing</button></div>';
+    else if(canShare(r))h+='<div class="share"><div><b>Share your location</b><span>So '+esc(dn)+" can find you at pickup"+(alt?", and "+esc(altWho())+" can follow your trip":"")+'.</span></div><button type="button" class="btn primary sm" data-act="share-start" data-id="'+esc(r.id)+'">'+ICON.locate+"Share my location</button></div>";
+    if(b&&altOn())h+='<div class="share"><div><b>Send to '+esc(altWho())+"</b><span>The driver’s details and a link to follow your trip live, on WhatsApp.</span></div>"+shareBtns(r,b)+"</div>";
+    h+=tl+'<p class="hint">The map updates every few seconds while '+esc(dn)+" has Saathi open. Only confirmed riders, and the one family contact each rider picks, can see it.</p>";
+  }
+  return h+"</div>";
 }
 function renderTrackInfo(){
-  const el=$("#trk-info"),r=trackRide();if(!el||!r)return;
-  const d=TV.data,dn=first(r.driverName),own=r.mine,b=own?null:myBooking(r.id);
-  let title,sub="",cls="wait",live=false;
-  if(r.status==="cancelled"||(d&&d.status==="cancelled")){title="This ride was cancelled";cls="no";}
-  else if(TV.err&&!d){title="Can’t show live location";sub=TV.err;cls="no";}
-  else if(!d){title="Loading live location…";}
-  else if(!d.sharing){title=own?"You’re not sharing your location":dn+" hasn’t started sharing yet";
-    sub=own?"Start sharing so your riders can follow you.":"You’ll see "+dn+" on the map as soon as they start"+(S.features.email?". We’ll email you too.":".");}
-  else{live=true;const me=[d.loc.lat,d.loc.lon],ph=phase(r,me),e=TV.eta&&TV.eta.ph===ph?TV.eta:estimate(r,me,ph);
-    const age=Math.round((d.loc.age+(Date.now()-TV.at))/1000),who=own?"You’re":dn+" is";cls="ok";
-    if(ph==="arrived")title="Arrived in "+r.to.split(",")[0];
-    else if(ph==="pickup")title=who+" at the pickup point";
-    else if(ph==="trip")title="On the way to "+r.to.split(",")[0];
-    else title=e?who+" "+fmtKm(e.km)+" away":who+" on the way";
-    const eta=!e||ph==="arrived"||ph==="pickup"?"":ph==="trip"?fmtKm(e.km)+" to go · arrives about "+clockIn(e.min):"About "+e.min+" min to "+r.from.split(",")[0];
-    sub=[eta,"Updated "+agoS(age)].filter(Boolean).join(" · ");
-    if(age>120){cls="wait";sub+=". "+(own?"Your":dn+"’s")+" phone may have lost signal or closed Saathi.";}}
-  const arr=r.dur!=null?addTime(r.time,r.dur):null;
-  const st='<div class="state '+cls+' trk-st">'+(live?'<span class="pulse"></span>':cls==="no"?ICON.x:ICON.clock)+"<div><b>"+esc(title)+"</b>"+(sub?"<span>"+esc(sub)+"</span>":"")+"</div></div>";
+  const el=$("#trk-info"),r=tvRide();if(!el||!r)return;
+  const P=tvPoints(),plan=tvPlan(P),s=tvStatus(P,plan);
+  const eta=s.min==null?"":s.min<60?'<div class="eta"><b>'+s.min+"</b><small>min</small></div>":'<div class="eta"><b>'+fmtDur(s.min)+"</b><small>to go</small></div>";
+  let st='<div class="tst '+s.cls+'"><div class="tst-row">'+(s.live?'<span class="pulse"></span>':s.cls==="no"?ICON.x:ICON.clock)+'<div class="txt"><b>'+esc(s.title)+"</b>"+(s.sub?"<span>"+esc(s.sub)+"</span>":"")+"</div>"+eta+"</div>";
+  if(s.prog){const v=Math.max(0,Math.min(1,s.prog.v));
+    st+='<div class="prog" role="progressbar" aria-label="How much of the way is done" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Math.round(v*100)+'"><i style="width:'+Math.round(Math.max(.03,v)*100)+'%"></i></div><div class="prog-l"><span>'+esc(s.prog.a)+"</span><span>"+esc(s.prog.b)+"</span></div>";}
+  st+="</div>";
   const se=$("#trk-status");if(se&&se.dataset.k!==st){se.dataset.k=st;se.innerHTML=st;}
-  let h='<div class="card"><ol class="tl"><li class="from"><b>'+esc(r.time)+"</b><span>"+esc(r.from)+'</span></li><li class="to"><b>'+(arr?esc(arr.t):"—")+"</b><span>"+esc(r.to)+"</span></li></ol>";
-  if(own){h+=TRK.rideId===r.id?'<button type="button" class="btn danger wide" data-act="share-stop">Stop sharing</button>':(shareWindow(r)?'<button type="button" class="btn primary wide" data-act="share-start" data-id="'+esc(r.id)+'">'+ICON.locate+"Start sharing my location</button>":"");}
-  else{h+='<div class="drv">'+avatarHTML(person(r))+'<div class="who-t"><b>'+esc(r.driverName)+"</b><span>"+(r.vehicle==="bike"?ICON.bike:ICON.car)+esc(r.vehicleName||(r.vehicle==="bike"?"Bike":"Car"))+"</span></div></div>";
-    if(b&&b.driverPhone)h+='<div class="row"><a class="btn wa" href="'+esc(waUrl(b.driverPhone,"Hi "+dn+", this is "+(S.user?S.user.name:"")+" from Saathi. I'm following your live location."))+'" target="_blank" rel="noopener">'+ICON.chat+'WhatsApp</a><a class="btn ghost" href="'+esc(telUrl(b.driverPhone))+'">'+ICON.phone+"Call</a></div>";
-    h+='<p class="hint">The map updates every few seconds while '+esc(dn)+" has Saathi open. Only you and the other confirmed riders can see it.</p>";}
-  h+="</div>";
-  if(el.dataset.k!==h){el.dataset.k=h;el.innerHTML=h;}
+  const h=tvInfo(P);if(el.dataset.k!==h){el.dataset.k=h;el.innerHTML=h;}
 }
 
 /* ---------- messages: one chat per ride and passenger, with text and voice ---------- */
@@ -1965,14 +2197,16 @@ function showView(){
   if(h.startsWith("reset=")){S.resetToken=h.slice(6);S.authMode="reset";S.authMsg="";h="profile";}
   if(h.startsWith("chat=")){chat=h.slice(5,145);h="chats";}
   if(h.startsWith("ride=")){S.pendingOpen=h.slice(5,69);h="find";history.replaceState(null,"","#find");}
-  let track=null;if(h.startsWith("track=")){track=h.slice(6,70);h="track";}
+  let track=null,live=null;if(h.startsWith("track=")){track=h.slice(6,70);h="track";}
+  /* a passenger's trip link for their family contact: no login needed */
+  if(h.startsWith("live=")){live=h.slice(5,130);h="track";}
   const v=VIEWS.includes(h)?h:"find",changed=v!==S.view||chat!==S.chatId;
   if(REC.rec&&(v!=="chats"||chat!==S.chatId))stopRec(false);
   if(!AUD.paused&&(v!=="chats"||chat!==S.chatId))AUD.pause();
-  const trackChanged=track!==S.trackId;
-  S.view=v;S.chatId=v==="chats"?chat:null;S.trackId=v==="track"?track:null;
+  const trackChanged=track!==S.trackId||live!==S.liveToken;
+  S.view=v;S.chatId=v==="chats"?chat:null;S.trackId=v==="track"?track:null;S.liveToken=v==="track"?live:null;
   VIEWS.forEach(x=>{$("#v-"+x).hidden=x!==v;});
-  const tab=v==="track"?"trips":v;
+  const tab=v==="track"?(S.liveToken?"":"trips"):v;
   document.querySelectorAll(".tabs a").forEach(a=>{if(a.dataset.view===tab)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});
   closeSheet();
   if(v==="profile")renderProfile(true);
@@ -1980,7 +2214,7 @@ function showView(){
   if(v==="track")openTrackView();else closeTrackView();
   if(v==="chats"){renderChats();renderAccount();if(S.chatId&&S.chat.loaded)renderMsgs(true);}
 }
-function renderAll(){renderNotice();renderLiveBar();renderAccount();renderFind();renderTrips();updateOffer();renderProfile();renderChats();if(S.view==="track"){renderTrackView();drawTrack();}renderSheet();}
+function renderAll(){checkSharing();renderNotice();renderLiveBar();renderAccount();renderFind();renderTrips();updateOffer();renderProfile();renderChats();if(S.view==="track"){renderTrackView();drawTrack();}renderSheet();}
 let tt;function toast(msg,ms){const t=$("#toast");t.textContent=msg;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),ms||3200);}
 
 /* ---------- wiring ---------- */
@@ -2037,7 +2271,7 @@ window.addEventListener("hashchange",()=>{
 loadCache();showView();readSearch();renderAll();
 
 (async function start(){
-  await load();renderAll();
+  await load();renderAll();resumeSharing();
   {const id=S.pendingOpen;S.pendingOpen=null;if(id&&rideById(id))openRide(id);}
   setInterval(()=>{if(TRK.rideId&&TRK.last&&Date.now()-TRK.lastSent>=15000)sendPos();renderLiveBar();},5000);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)keepAwake();});

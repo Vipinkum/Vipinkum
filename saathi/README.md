@@ -29,7 +29,13 @@ A free Supabase project pauses after a week without activity. Open its dashboard
 - Women-only rides can be posted by women drivers and requested by women passengers.
 - **Profile photo:** upload one from the profile page. It's cropped square and shrunk in the browser (about 30 KB), and it shows on ride cards, requests and chats.
 - **Payment QR:** drivers can add their UPI QR code (from GPay, PhonePe or Paytm) when they offer a ride. It's remembered for next time. Only passengers whose seat is confirmed can see it, and they can save it to pay from their UPI app.
-- **Alternative number:** in their profile, passengers can add a family member's or friend's number. Once a seat is confirmed, one tap sends that number the route, time, driver's name and number, and the vehicle, by WhatsApp or SMS from the passenger's phone. The confirmation email includes the same WhatsApp link. Sending it with no tap at all would need a paid SMS or WhatsApp Business service.
+- **Alternative number:** in their profile, passengers can add a family member's or friend's number, with a checkbox **Send my live location and driver details to this number on WhatsApp** (on by default). When a seat is confirmed, that number gets the driver's name, number and vehicle, the route and time, and a **live trip link**:
+  - automatically on WhatsApp, if WhatsApp is set up (see below);
+  - otherwise automatically by SMS, if SMS is set up;
+  - and always with one tap: the ride shows **WhatsApp** and **SMS** buttons that open with the message ready. The confirmation email has the same WhatsApp link.
+
+  Unticking the checkbox stops all of this.
+- **Live trip link** (`/#live=…`): opens without an account and shows that passenger's trip on a map: the driver's live location and photo, name, number (with Call and WhatsApp), vehicle, route and arrival time, plus the passenger's own live location while they share it. The link is signed, so it can't be guessed, and it shows nothing once the seat or ride is cancelled or the trip is over.
 
 ## When a driver cancels
 
@@ -37,11 +43,13 @@ Everyone who asked for a seat sees the ride as cancelled. At the top of **My tri
 
 ## Live location
 
-- On the day of the ride (from 6 hours before departure), the driver taps **Share live location** on their ride. Riders with a confirmed seat can then open **Live location** and follow the driver on a map, like a delivery app. They see how far away the driver is and about how long until pickup, then "at the pickup point", then the time left to the destination.
+- **Only while the ride is confirmed.** The driver sees **Share live location** once at least one rider's seat is confirmed; a rider sees it while their own seat is confirmed. It's offered from 6 hours before departure until 3 hours after the expected arrival. Sharing stops by itself if the ride is cancelled, the rider cancels their seat, the last confirmed rider cancels, or the trip is over.
+- **Riders** follow the driver on a map, like a ride app: the vehicle moves along the road route to them, with an arrow for the direction it's heading, "Ravi is 2.4 km away", the minutes until pickup and a progress bar. After pickup it shows the distance and arrival time at the destination. A rider can tap **Share my location** so the driver can find them, and so their family contact's link shows where they are.
+- **The driver** sees every confirmed rider on the same map, each with their photo or initials, how far away they are, and Call and WhatsApp buttons. The route goes to the nearest rider still waiting, then to the destination. Riders who don't share show as "Not sharing location".
 - Riders get an email when the driver starts sharing, if email is set up.
-- Only the latest position is stored, never a route history. It's visible only to the driver and confirmed riders, and it disappears when the driver taps **Stop** or cancels the ride.
-- Browsers pause location in background tabs, so the driver needs to keep Saathi open on screen while driving. The app keeps the screen awake while sharing, and shows a **Resume** button if Saathi was closed.
-- The map uses Leaflet with OpenStreetMap tiles, and the travel times come from OSRM. Both are free community services for light use. If Saathi gets busy, switch to a hosted tile and routing plan.
+- Only the latest position of each person is stored, never a route history. The driver's is visible to confirmed riders and their family links; a rider's is visible only to the driver and that rider's family link. Positions are deleted when the person taps **Stop**, cancels, or the ride is cancelled.
+- Browsers pause location in background tabs, so keep Saathi open on screen while sharing. The app keeps the screen awake, picks sharing up again by itself when Saathi is reopened (if location is already allowed), and otherwise shows a **Resume** button.
+- The map uses Leaflet with OpenStreetMap tiles, and the road routes and times come from OSRM. Both are free community services for light use. If Saathi gets busy, switch to a hosted tile and routing plan.
 
 ## Messages
 
@@ -86,7 +94,7 @@ No SMS or WhatsApp company sends to Indian numbers for free. The free option is 
 When SMS is set up, Saathi texts:
 - the driver, when someone asks for a seat;
 - the passenger, when the driver confirms, with the driver's number;
-- the passenger's **alternative number**, when the seat is confirmed, with the route, time, and the driver's name, number and vehicle;
+- the passenger's **alternative number**, when the seat is confirmed, with the route, time, the driver's name, number and vehicle, and the live trip link (only if WhatsApp isn't set up or didn't go through, and only if the passenger left the checkbox on);
 - the passenger, if the driver cancels, with a link to another ride on the same route.
 
 Setup:
@@ -97,9 +105,32 @@ Setup:
 
 If you run your own SMS Gateway server, also set `SMSGATE_URL` (the default is `https://api.sms-gate.app/3rdparty/v1`).
 
-## Checking email and SMS
+## WhatsApp (optional, sends the live trip link with no tap)
 
-The site owner's profile shows a **Notifications** card with a **Send test** button for email and for SMS. If a test fails, the card shows the error the mail or SMS server gave. The owner is the account whose email matches `ADMIN_EMAIL`, or `MAIL_FROM` if `ADMIN_EMAIL` isn't set.
+Without this, passengers send their family contact the trip on WhatsApp with one tap, which is free. To send it automatically, Saathi uses Meta's **WhatsApp Cloud API**. WhatsApp only lets a business start a chat with a message template that Meta has approved, and Meta charges a small fee per message to Indian numbers (check Meta's current WhatsApp pricing). The test number Meta gives you is free and can send to up to 5 numbers you add.
+
+1. At https://developers.facebook.com create an app of type **Business** and add the **WhatsApp** product.
+2. Under **WhatsApp → API Setup**, note the **Phone number ID**. For testing, add your own number as a recipient there.
+3. Create a permanent access token: in Meta **Business Settings → System users**, add a system user, give it the app, and generate a token with `whatsapp_business_messaging` and `whatsapp_business_management`.
+4. In **WhatsApp Manager → Message templates**, create a template named `saathi_trip`, category **Utility**, language **English**, with this body (six variables, in this order):
+
+   ```
+   Saathi trip update.
+   {{1}} is travelling with Saathi.
+   Driver: {{2}}, phone {{3}}
+   Vehicle: {{4}}
+   Trip: {{5}}
+   Follow the live location here: {{6}}
+   You get this because they added your number as their trusted contact on Saathi.
+   ```
+   Wait for Meta to approve it.
+5. In Vercel, add `WHATSAPP_TOKEN` (the token) and `WHATSAPP_PHONE_ID` (the phone number ID), then redeploy. If your template has another name or language code, also set `WHATSAPP_TEMPLATE` and `WHATSAPP_LANG` (default `en`). `WHATSAPP_API_VERSION` defaults to `v23.0`.
+
+If a WhatsApp message fails, Saathi sends the same details by SMS when SMS is set up.
+
+## Checking email, SMS and WhatsApp
+
+The site owner's profile shows a **Notifications** card with a **Send test** button for email, SMS and WhatsApp. The WhatsApp test sends the `saathi_trip` template to the owner's own number. If a test fails, the card shows the error the mail, SMS or WhatsApp server gave. The owner is the account whose email matches `ADMIN_EMAIL`, or `MAIL_FROM` if `ADMIN_EMAIL` isn't set.
 
 ## UPI payments
 

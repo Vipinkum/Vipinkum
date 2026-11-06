@@ -81,6 +81,9 @@ module.exports = async (req, res) => {
           o.driverPhone = d ? d.phone || "" : "";
           o.qr = L.mediaUrl(ride.qr);
           o.upi = ride.upi || "";
+          // The live trip link for the passenger's family contact, and whether Saathi already sent it.
+          o.token = L.shareToken(b.id);
+          o.altSent = b.altSent ? { wa: !!b.altSent.wa, sms: !!b.altSent.sms } : null;
         }
         outBookings.push(o);
       }
@@ -99,7 +102,7 @@ module.exports = async (req, res) => {
       };
     }).sort((a, b) => b.lastAt - a.lastAt);
 
-    L.send(res, 200, { me: L.publicUser(sessionUser), features: { email: L.mailOn(), sms: L.smsOn(), admin: L.isAdmin(sessionUser) }, rides: outRides, bookings: outBookings, convs: outConvs });
+    L.send(res, 200, { me: L.publicUser(sessionUser), features: { email: L.mailOn(), sms: L.smsOn(), wa: L.waOn(), admin: L.isAdmin(sessionUser) }, rides: outRides, bookings: outBookings, convs: outConvs });
   } catch (e) {
     L.fail(res, 502, "store_unreachable", "The ride board can't be reached right now.");
   }
