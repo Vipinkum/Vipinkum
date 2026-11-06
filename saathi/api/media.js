@@ -1,5 +1,5 @@
-// GET    /api/media?id=...          a profile photo (anyone), payment QR (its owner and riders whose seat
-//                                   it confirmed) or voice message (the two people in that chat)
+// GET    /api/media?id=...          a profile photo (anyone), payment QR (its owner and riders with a confirmed
+//                                   seat on one of the owner's rides) or voice message (the two people in that chat)
 // POST   /api/media {type, data}    upload your profile photo or payment QR (type "photo" or "qr")
 // DELETE /api/media?type=photo|qr   remove your profile photo or saved payment QR
 const L = require("./_lib");
@@ -12,8 +12,9 @@ async function canSee(doc, req) {
   if (!me) return false;
   if (doc.owner === me.id) return true;
   if (doc.type === "qr") {
+    // Riders with a confirmed seat on any of the owner's rides (the QR can be on the ride or in the driver's profile).
     const [rides, bookings] = await Promise.all([L.all(L.RIDES), L.all(L.BOOKINGS)]);
-    const rideIds = new Set(rides.filter((r) => r.qr === doc.id && r.driverUid === doc.owner).map((r) => r.id));
+    const rideIds = new Set(rides.filter((r) => r.driverUid === doc.owner).map((r) => r.id));
     return bookings.some((b) => rideIds.has(b.rideId) && b.uid === me.id && b.status === "confirmed");
   }
   if (doc.type === "voice" || doc.type === "file") {

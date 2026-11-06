@@ -79,8 +79,9 @@ module.exports = async (req, res) => {
         if (asPassenger && status === "confirmed") {
           const d = userById.get(ride.driverUid);
           o.driverPhone = d ? d.phone || "" : "";
-          o.qr = L.mediaUrl(ride.qr);
-          o.upi = ride.upi || "";
+          // How to pay: the QR and UPI ID on the ride, or else the ones saved in the driver's profile.
+          o.qr = L.mediaUrl(ride.qr || (d && d.qr));
+          o.upi = ride.upi || (d && d.upi) || "";
           // The live trip link for the passenger's family contact, and whether Saathi already sent it.
           o.token = L.shareToken(b.id);
           o.altSent = b.altSent ? { wa: !!b.altSent.wa, sms: !!b.altSent.sms } : null;

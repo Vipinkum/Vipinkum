@@ -6,6 +6,7 @@
 <title>Saathi · Share car and bike rides</title>
 <meta name="description" content="Book a seat in a car or on a bike with someone already going your way, and split the fuel cost.">
 <meta name="theme-color" content="#0b7a4b">
+<script>/* day or night mode chosen on this device, set before the page paints */try{var t=localStorage.getItem("saathi.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icons/logo.svg" type="image/svg+xml">
 <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192">
@@ -467,6 +468,43 @@ details.card form{display:grid;gap:14px}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .trk-map .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.88)}}
 :root[data-theme="dark"] .trk-map .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.88)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tg.live{background:rgba(34,194,107,.16);color:#5fe0a0}}
+:root[data-theme="dark"] .tg.live{background:rgba(34,194,107,.16);color:#5fe0a0}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .leaflet-bar a{background:var(--surface);color:var(--ink);border-color:var(--line)}}
+:root[data-theme="dark"] .leaflet-bar a{background:var(--surface);color:var(--ink);border-color:var(--line)}
+
+/* day and night switch */
+.themebtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:grid;place-items:center;cursor:pointer;flex:none;padding:0}
+.themebtn svg{width:19px;height:19px}
+.themebtn:hover{border-color:var(--ink)}
+@media (max-width:720px){.themebtn{margin-left:auto;width:36px;height:36px}.install{margin-left:0}}
+.seg2{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--surface-2);border-radius:13px;padding:4px}
+.seg2 label{position:relative;display:flex;align-items:center;justify-content:center;gap:7px;min-height:42px;border-radius:10px;font:700 14.5px var(--f-display);color:var(--muted);cursor:pointer;padding-top:2px}
+.seg2 label svg{width:18px;height:18px;margin-top:-2px}
+.seg2 input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.seg2 label:has(input:checked){background:var(--surface);color:var(--ink);box-shadow:var(--sh-1)}
+.seg2 label:has(input:focus-visible){outline:3px solid var(--focus);outline-offset:1px}
+
+/* My trips in parts: confirmed, waiting, completed, cancelled */
+.ttabs{display:flex;gap:4px;background:var(--surface-2);border-radius:15px;padding:4px;margin:22px 0 14px;overflow-x:auto;scrollbar-width:none}
+.ttabs::-webkit-scrollbar{display:none}
+.ttabs button{flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;background:transparent;border-radius:11px;min-height:46px;padding:4px 14px 0;font:700 15px var(--f-display);color:var(--muted);cursor:pointer;white-space:nowrap}
+.ttabs button:hover{color:var(--ink)}
+.ttabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--sh-1)}
+.ttabs .n{min-width:22px;height:20px;border-radius:10px;padding:4px 6px 0;font:800 12px/1 var(--f-display);background:var(--line);color:var(--ink);margin-top:-2px}
+.ttabs [data-id="confirmed"] .n{background:var(--brand-soft);color:var(--brand)}
+.ttabs [data-id="waiting"] .n{background:var(--accent-soft);color:var(--accent-text)}
+.ttabs [data-id="cancelled"] .n{background:var(--rose-soft);color:var(--rose)}
+@media (max-width:520px){.ttabs button{padding-inline:10px;font-size:14px}}
+.trip{display:grid;gap:8px}
+.quick{display:flex;gap:8px;flex-wrap:wrap}
+.quick .btn{flex:1 1 140px}
+.trips-sub{font:700 12.5px var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:20px 0 10px}
+.trips-sub:first-child{margin-top:4px}
+.cnote{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--rose-soft);border-radius:16px;padding:12px 14px;margin-top:18px}
+.cnote>svg{width:24px;height:24px;color:var(--rose);flex:none}
+.cnote span{flex:1;min-width:180px;font-size:14.5px;color:var(--muted)}
+.cnote b{display:block;color:var(--ink);font-family:var(--f-display);font-size:16px;padding-top:2px}
+#trips-body .card.alert{margin:0 0 14px}
 @media (max-width:880px){.trk{grid-template-columns:minmax(0,1fr);grid-template-areas:"status" "map" "info";grid-template-rows:auto;gap:12px;margin-top:14px}.trk-map{height:46vh;min-height:280px}}
 
 /* footer */
@@ -635,6 +673,7 @@ label.linkbtn{display:inline-block}
       <a href="#chats" data-view="chats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4.1A8 8 0 1 1 20 11.5z"/></svg><span class="l-long">Messages</span><span class="l-short">Chats</span><span class="badge" id="badge-chat" hidden></span></a>
       <a href="#profile" data-view="profile" id="tab-profile"><span class="tab-ic"></span><span class="tab-l">Log in</span></a>
     </nav>
+    <button type="button" class="themebtn" id="theme" data-act="theme" aria-label="Switch to night mode"></button>
     <button type="button" class="install" id="install" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Install app</button>
   </div>
 </header>
@@ -815,8 +854,28 @@ const ICON={
   qr:'<svg '+SV+'><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h2v2h-2zM18 14h2M14 18h2M18 18h2v2"/></svg>',
   back:'<svg '+SV+' stroke-width="2.2"><path d="M15 5 8 12l7 7"/></svg>',
   clip:'<svg '+SV+' stroke-width="2"><path d="m20 11.5-8.2 8.2a5 5 0 0 1-7.1-7.1l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7l-8.5 8.5a1.7 1.7 0 0 1-2.4-2.4l7.8-7.8"/></svg>',
-  file:'<svg '+SV+'><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>'
+  file:'<svg '+SV+'><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>',
+  sun:'<svg '+SV+'><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></svg>',
+  moon:'<svg '+SV+'><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
+  auto:'<svg '+SV+'><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>'
 };
+/* ---------- day and night mode: Auto follows the phone, or the person picks Day or Night (kept on this device) ---------- */
+const THEME_KEY="saathi.theme",darkQ=matchMedia("(prefers-color-scheme: dark)");
+const themePref=()=>{const t=store.get(THEME_KEY);return t==="light"||t==="dark"?t:"system";};
+const isDark=()=>{const p=themePref();return p==="dark"||(p==="system"&&darkQ.matches);};
+function applyTheme(){
+  const p=themePref(),root=document.documentElement,d=isDark();
+  if(p==="system")root.removeAttribute("data-theme");else root.setAttribute("data-theme",p);
+  const b=$("#theme");if(b){b.innerHTML=d?ICON.sun:ICON.moon;b.setAttribute("aria-label",d?"Switch to day mode":"Switch to night mode");b.title=d?"Day mode":"Night mode";}
+  document.querySelectorAll('input[name="theme"]').forEach(i=>{i.checked=i.value===p;});
+  const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=d?"#0a0f0c":"#0b7a4b";
+}
+function setTheme(p){if(p==="system"){try{localStorage.removeItem(THEME_KEY);}catch(_){}}else store.set(THEME_KEY,p);applyTheme();
+  toast(p==="system"?"Appearance follows your phone":p==="dark"?"Night mode on":"Day mode on");}
+function themeHTML(){const p=themePref(),o=(v,l,ic)=>'<label><input type="radio" name="theme" value="'+v+'"'+(p===v?" checked":"")+">"+ic+l+"</label>";
+  return'<div class="card"><div class="eyebrow">Appearance</div><div class="seg2" role="radiogroup" aria-label="Appearance">'+o("light","Day",ICON.sun)+o("dark","Night",ICON.moon)+o("system","Auto",ICON.auto)+'</div><p class="hint">Auto follows your phone’s day or night setting.</p></div>';}
+darkQ.addEventListener&&darkQ.addEventListener("change",applyTheme);
+applyTheme();
 const UPI_RE=/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z][a-zA-Z0-9.\-]{1,64}$/;
 document.querySelectorAll(".locate").forEach(b=>{b.innerHTML=ICON.locate;});
 
@@ -1219,31 +1278,58 @@ function renderTrips(){
     el.innerHTML=S.mode==="loading"?'<p class="loading">Loading your trips…</p>':'<div class="empty"><b>Log in to see your trips</b><span>Your seat requests and the rides you offer show up here.</span><button type="button" class="btn primary" data-act="login">Log in or create an account</button></div>';
     return;
   }
-  const order=(a,b)=>{const pa=isPast(a),pb=isPast(b);if(pa!==pb)return pa?1:-1;return pa?(b.date+b.time).localeCompare(a.date+a.time):(a.date+a.time).localeCompare(b.date+b.time);};
   let html="";
-  S.bookings.filter(b=>b.mine&&isActive(b)).forEach(b=>{const r=rideById(b.rideId);
-    if(r&&r.status==="cancelled"&&!isPast(r))html+='<div class="card alert">'+cancelledHTML(r,b,true)+"</div>";});
   const wait=waiting().sort((a,b)=>{const x=rideById(a.rideId),y=rideById(b.rideId);return(x.date+x.time).localeCompare(y.date+y.time)||a.createdAt-b.createdAt;});
   if(wait.length)html+='<h2>Requests waiting for you</h2><p class="hint">Confirm a request to share numbers'+(S.features.email?" and email the rider":"")+'. Nothing is booked until you do.</p><div class="card reqs" style="margin-top:12px">'+wait.map(b=>reqHTML(b,rideById(b.rideId),true)).join("")+"</div>";
-  const riding=[...new Set(S.bookings.filter(b=>b.mine).map(b=>b.rideId))].map(rideById).filter(r=>r&&myBooking(r.id)).sort(order);
-  html+="<h2>You’re riding</h2>";
-  html+=riding.length?'<div class="list trips">'+riding.map(r=>{const b=myBooking(r.id);let s,c="";
-      if(r.status==="cancelled"){s="Driver cancelled";c="no";}
-      else if(b.status==="declined"){s="Driver couldn’t take this request";c="no";}
-      else if(b.status==="pending"){s=isPast(r)?"Not confirmed":"Waiting for the driver to confirm";c="wait";}
-      else s=(isPast(r)?"Completed":"Confirmed")+" · "+plural(b.seats,"seat","seats")+" · "+inr(b.seats*r.price);
-      return cardHTML(r,{status:s,cls:c});}).join("")+"</div>"
-    :'<div class="empty"><span>You haven’t asked for a seat yet.</span><a class="btn ghost" href="#find">Find a ride</a></div>';
-  html+="<h2>You’re driving</h2>";
-  const driving=S.rides.filter(isMine).sort(order);
-  html+=driving.length?'<div class="list trips">'+driving.map(r=>{
-      if(r.status==="cancelled")return cardHTML(r,{status:"You cancelled"});
-      const pend=isPast(r)?0:requestsFor(r.id).filter(b=>b.status==="pending").length;
-      const parts=[r.taken?plural(r.taken,"seat","seats")+" confirmed · "+inr(r.taken*r.price):"No confirmed seats yet"];
-      if(pend)parts.push(plural(pend,"request","requests")+" waiting");
-      return cardHTML(r,{status:parts.join(" · "),cls:pend?"wait":""});}).join("")+"</div>"
-    :'<div class="empty"><span>You’re not offering any rides.</span><a class="btn ghost" href="#offer">Offer a ride</a></div>';
+  const items=tripItems(),count=t=>items.filter(i=>i.tab===t).length;
+  /* Open the first tab with something in it, until the person picks one */
+  if(!S.tripTabSet||!TRIP_TABS.some(t=>t[0]===S.tripTab))S.tripTab=(TRIP_TABS.find(t=>count(t[0]))||TRIP_TABS[0])[0];
+  const lost=items.filter(i=>i.alert);
+  if(lost.length&&S.tripTab!=="cancelled")html+='<div class="cnote" role="status">'+ICON.x+"<span><b>"+(lost.length===1?esc(first(lost[0].r.driverName))+" cancelled your ride":lost.length+" of your rides were cancelled")+"</b>Other rides on the same route may have seats.</span>"
+    +'<button type="button" class="btn ghost sm" data-act="trip-tab" data-id="cancelled">See options</button></div>';
+  html+='<div class="ttabs" role="tablist" aria-label="Trips">'+TRIP_TABS.map(([k,l])=>'<button type="button" role="tab" data-act="trip-tab" data-id="'+k+'" aria-selected="'+(S.tripTab===k)+'"'+(S.tripTab===k?"":' tabindex="-1"')+">"+l+'<span class="n">'+count(k)+"</span></button>").join("")+"</div>";
+  const mine=items.filter(i=>i.tab===S.tripTab),past=S.tripTab==="done"||S.tripTab==="cancelled";
+  mine.sort((a,b)=>{const x=a.r.date+a.r.time,y=b.r.date+b.r.time;return past?y.localeCompare(x):x.localeCompare(y);});
+  let body="";
+  if(S.tripTab==="cancelled")lost.forEach(i=>{body+='<div class="card alert">'+cancelledHTML(i.r,i.b,true)+"</div>";});
+  const rest=mine.filter(i=>!i.alert),both=rest.some(i=>i.role==="riding")&&rest.some(i=>i.role==="driving");
+  ["riding","driving"].forEach(role=>{const list=rest.filter(i=>i.role===role);if(!list.length)return;
+    if(both)body+='<div class="trips-sub">'+(role==="riding"?"You’re riding":"You’re driving")+"</div>";
+    body+='<div class="list trips">'+list.map(i=>'<div class="trip">'+cardHTML(i.r,{status:i.s,cls:i.c})+quickHTML(i)+"</div>").join("")+"</div>";});
+  if(!body)body='<div class="empty">'+{confirmed:"<b>No confirmed trips</b><span>Once a driver confirms your seat, or you confirm a rider, the trip shows here.</span>",
+      waiting:"<b>Nothing waiting</b><span>Seat requests you sent, and rides you offer with no confirmed rider yet, show here.</span>",
+      done:"<b>No completed trips yet</b><span>Trips move here after they’ve left.</span>",cancelled:"<b>Nothing cancelled</b><span>Cancelled rides and requests that weren’t accepted show here.</span>"}[S.tripTab]
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><a class="btn ghost sm" href="#find">Find a ride</a><a class="btn ghost sm" href="#offer">Offer a ride</a></div></div>';
+  html+='<div role="tabpanel" aria-label="'+esc(TRIP_TABS.find(t=>t[0]===S.tripTab)[1])+'">'+body+"</div>";
   el.innerHTML=html;
+}
+/* My trips in four parts: confirmed, waiting, completed and cancelled */
+const TRIP_TABS=[["confirmed","Confirmed"],["waiting","Waiting"],["done","Completed"],["cancelled","Cancelled"]];
+function tripItems(){
+  const out=[];
+  [...new Set(S.bookings.filter(b=>b.mine).map(b=>b.rideId))].forEach(id=>{const r=rideById(id);if(!r)return;
+    const b=myBooking(id)||S.bookings.filter(x=>x.mine&&x.rideId===id).sort((x,y)=>y.createdAt-x.createdAt)[0],dn=first(r.driverName),past=isPast(r);
+    let tab,s,c="",alert=false;
+    if(r.status==="cancelled"&&isActive(b)){tab="cancelled";s=dn+" cancelled";c="no";alert=!past;}
+    else if(b.status==="cancelled"){tab="cancelled";s="You cancelled";c="no";}
+    else if(b.status==="declined"){tab="cancelled";s=dn+" couldn’t take this request";c="no";}
+    else if(b.status==="pending"){if(past){tab="cancelled";s="Not confirmed before it left";c="no";}else{tab="waiting";s="Waiting for "+dn+" to confirm";c="wait";}}
+    else{tab=past?"done":"confirmed";s=(past?"Completed":"Confirmed")+" · "+plural(b.seats,"seat","seats")+" · "+inr(b.seats*r.price);}
+    out.push({r,b,tab,s,c,alert,role:"riding"});});
+  S.rides.filter(isMine).forEach(r=>{const past=isPast(r);
+    if(r.status==="cancelled")return out.push({r,tab:"cancelled",s:"You cancelled",c:"no",role:"driving"});
+    const pend=past?0:requestsFor(r.id).filter(b=>b.status==="pending").length;
+    const parts=[r.taken?plural(r.taken,"seat","seats")+" confirmed · "+inr(r.taken*r.price):"No confirmed rider yet"];
+    if(pend)parts.push(plural(pend,"request","requests")+" waiting");
+    out.push({r,tab:past?"done":r.taken?"confirmed":"waiting",s:parts.join(" · "),c:pend?"wait":"",role:"driving"});});
+  return out;
+}
+/* One-tap actions under a trip: live location and paying the driver */
+function quickHTML(i){
+  const r=i.r,acts=[];if(r.status!=="open")return"";
+  if(canShare(r))acts.push('<a class="btn primary sm" href="#track='+esc(r.id)+'">'+(r.live?'<span class="pulse"></span>Track live':ICON.pin+"Live location")+"</a>");
+  if(i.role==="riding"&&i.b.status==="confirmed"&&r.price>0)acts.push('<button type="button" class="btn ghost sm" data-act="open-pay" data-id="'+esc(r.id)+'">'+ICON.qr+"Pay "+inr(i.b.seats*r.price)+"</button>");
+  return acts.length?'<div class="quick">'+acts.join("")+"</div>":"";
 }
 
 /* ---------- ride sheet ---------- */
@@ -1289,15 +1375,16 @@ function sheetHTML(r){
       f=stateHTML("wait",ICON.clock,"Waiting for "+esc(dn)+" to confirm","You asked for "+plural(b.seats,"seat","seats")+" ("+inr(b.seats*r.price)+"). "+(S.features.email?"You’ll get an email when they answer.":"Check My trips to see when they answer."));
       if(!past)f+=cancelBtn("Cancel request");
     }else if(b&&b.status==="confirmed"){
-      f=stateHTML("ok",ICON.tick,"Your seat is confirmed",plural(b.seats,"seat","seats")+" · "+inr(b.seats*r.price)+" to pay "+esc(dn)+" on the day.");
-      if(canShare(r))f+='<a class="btn primary wide" href="#track='+esc(r.id)+'">'+(r.live?'<span class="pulse"></span>Track '+esc(dn)+" live":ICON.pin+"Live location")+"</a>"
-        +(r.live?"":'<p class="hint">You can follow '+esc(dn)+" on a map once they start sharing their location"+(S.features.email?". We’ll email you when they do.":".")+"</p>");
-      f+=liveCardHTML(r);
-      if(b.driverPhone&&!past){
+      f=stateHTML("ok",ICON.tick,"Your seat is confirmed",plural(b.seats,"seat","seats")+" · "+inr(b.seats*r.price)+" to pay "+esc(dn)+".");
+      if(b.driverPhone){
         const text="Hi "+dn+", this is "+S.user.name+" from Saathi. My "+plural(b.seats,"seat","seats")+" on your ride from "+tripLine(r)+" "+(b.seats===1?"is":"are")+" confirmed. Where should I meet you?";
         f+='<div class="row"><a class="btn wa" href="'+esc(waUrl(b.driverPhone,text))+'" target="_blank" rel="noopener" aria-label="WhatsApp '+esc(dn)+'">'+ICON.chat+'WhatsApp</a><a class="btn ghost" href="'+esc(telUrl(b.driverPhone))+'">'+ICON.phone+'Call</a></div><p class="hint">'+esc(dn)+"’s number: <b>"+esc(fmtPhone(b.driverPhone))+"</b></p>";
       }
-      if((b.qr||b.upi)&&!past&&r.price>0)f+=payHTML(r,b,dn);
+      /* Payment stays here after the ride too, since people usually pay at the drop */
+      if(r.price>0)f+=payHTML(r,b,dn);
+      if(canShare(r))f+='<a class="btn primary wide" href="#track='+esc(r.id)+'">'+(r.live?'<span class="pulse"></span>Track '+esc(dn)+" live":ICON.pin+"Live location")+"</a>"
+        +(r.live?"":'<p class="hint">You can follow '+esc(dn)+" on a map once they start sharing their location"+(S.features.email?". We’ll email you when they do.":".")+"</p>");
+      f+=liveCardHTML(r);
       if(!past)f+=shareHTML(r,b);
       if(!past)f+=cancelBtn("Cancel my seat");
     }else if(b&&b.status==="declined")f=stateHTML("no",ICON.x,"Request not accepted",esc(dn)+" couldn’t take this one. Other rides on this route may still have seats.");
@@ -1404,6 +1491,7 @@ function profileHTML(){
   f+=fld("pf-bio","About you <em>(optional)</em>",'<textarea id="pf-bio" name="bio" maxlength="200" placeholder="Office commuter, quiet rider, fine with music…">'+esc(u.bio)+"</textarea>",'<span id="pf-count">'+u.bio.length+" / 200</span> · Shown to riders on your listings.");
   f+='<p class="err" role="alert" hidden></p><p class="okmsg" role="status" hidden></p><button class="btn primary" type="submit">Save changes</button></form>';
   let side='<div class="pf-side"><div class="card"><div class="eyebrow">Your activity</div><div class="stats" id="pf-stats"></div></div>';
+  side+=themeHTML();
   if(S.features.admin)side+=setupHTML();
   side+='<details class="card"><summary>Change password</summary><form data-form="password" novalidate>'+fld("pw-cur","Current password",pwHTML("pw-cur","current","current-password"))+fld("pw-new","New password",pwHTML("pw-new","password","new-password"),"At least 8 characters. Other devices will be logged out.")
     +'<p class="err" role="alert" hidden></p><p class="okmsg" role="status" hidden></p><button class="btn ghost" type="submit">Change password</button></form></details>';
@@ -1509,6 +1597,9 @@ async function act(a,el){
   if(a==="share-start"){startSharing(id||(r&&r.id));return;}
   if(a==="share-stop"){stopSharing();toast("Stopped sharing your location");return;}
   if(a==="trk-fit"){TV.fitted=false;drawTrack();return;}
+  if(a==="trip-tab"){S.tripTab=id;S.tripTabSet=true;renderTrips();const t=document.querySelector('#trips-body [role="tab"][data-id="'+id+'"]');if(t)t.focus();return;}
+  if(a==="open-pay"){openRide(id,el);setTimeout(()=>{const p=$("#sheet-card .pay");if(p)p.scrollIntoView({block:"center"});},60);return;}
+  if(a==="theme"){setTheme(isDark()?"light":"dark");return;}
   if(a==="search-route"){const x=rideById(id);if(x){setPlace($("#s-from"),x.from,x.fromPt);setPlace($("#s-to"),x.to,x.toPt);$("#s-date").value="";readSearch();go("find");renderFind();setTimeout(()=>$("#r-title").scrollIntoView({block:"start"}),60);}return;}
   if(a==="chat-back"){location.hash="chats";return;}
   if(a==="chat-ride"){go("find",id);return;}
@@ -1591,6 +1682,7 @@ function upiApps(pa,pn,am,tn){
 const APP_MARK={GPay:"G",PhonePe:"Pe",Paytm:"Pt",BHIM:"B"};
 function payHTML(r,b,dn){
   const am=b.seats*r.price,links=b.upi?upiApps(b.upi,r.driverName,am,"Saathi "+r.from.split(",")[0]+" to "+r.to.split(",")[0]):null;
+  if(!b.upi&&!b.qr)return'<div class="pay"><div class="pay-h"><b>Pay '+inr(am)+" to "+esc(dn)+"</b><span>"+esc(dn)+" hasn’t added a UPI ID or payment QR yet. Pay in cash, or ask for their UPI ID on WhatsApp.</span></div></div>";
   let h='<div class="pay"><div class="pay-h"><b>Pay '+inr(am)+" to "+esc(dn)+" by UPI</b>";
   if(links)h+="<span>Pick your app. It opens with "+esc(dn)+"’s UPI ID and "+inr(am)+" filled in.</span></div>"
     +'<div class="apps" role="list">'+links.apps.map(([n,u])=>'<a class="app" role="listitem" href="'+esc(u)+'"><span class="ai">'+APP_MARK[n]+"</span><span>"+n+"</span></a>").join("")
@@ -1978,6 +2070,7 @@ function tvInfo(P){
     h+=tl+'<p class="hint">Riders with a confirmed seat see you on the map while you share, and each can send a trip link to one family contact. Riders who share their location show up here.</p>';
   }else{const b=myBooking(r.id),alt=altOn()?" and "+esc(altWho()):"";
     h+=drvCard(r.driverName,r.driverPhoto)+(b&&b.driverPhone?callRow(b.driverPhone,"Hi "+dn+", this is "+(S.user?S.user.name:"")+" from Saathi. I'm following your live location."):"");
+    if(b&&b.status==="confirmed"&&r.price>0)h+='<button type="button" class="btn ghost wide" data-act="open-pay" data-id="'+esc(r.id)+'">'+ICON.qr+"Pay "+inr(b.seats*r.price)+" to "+esc(dn)+"</button>";
     if(TRK.rideId===r.id)h+='<div class="share live"><div><b><span class="pulse"></span>You’re sharing your location</b><span>'+esc(dn)+alt+' can see where you are.</span></div><button type="button" class="btn danger solid sm" data-act="share-stop">Stop sharing</button></div>';
     else if(canShare(r))h+='<div class="share"><div><b>Share your location</b><span>So '+esc(dn)+" can find you at pickup"+(alt?", and "+esc(altWho())+" can follow your trip":"")+'.</span></div><button type="button" class="btn primary sm" data-act="share-start" data-id="'+esc(r.id)+'">'+ICON.locate+"Share my location</button></div>";
     if(b&&altOn())h+='<div class="share"><div><b>Send to '+esc(altWho())+"</b><span>The driver’s details and a link to follow your trip live, on WhatsApp.</span></div>"+shareBtns(r,b)+"</div>";
@@ -2248,7 +2341,12 @@ document.addEventListener("click",e=>{
   const a=e.target.closest("[data-act]");if(a){e.preventDefault();act(a.dataset.act,a);return;}
   const r=e.target.closest("button[data-ride]");if(r)openRide(r.dataset.ride,r);
 });
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet();
+  /* arrow keys move between the My trips tabs */
+  const t=e.target.closest&&e.target.closest('#trips-body [role="tab"]');
+  if(t&&(e.key==="ArrowRight"||e.key==="ArrowLeft")){e.preventDefault();const i=TRIP_TABS.findIndex(x=>x[0]===t.dataset.id),n=TRIP_TABS[(i+(e.key==="ArrowRight"?1:TRIP_TABS.length-1))%TRIP_TABS.length][0];act("trip-tab",{dataset:{id:n}});}
+});
+document.addEventListener("change",e=>{if(e.target.name==="theme"&&e.target.checked)setTheme(e.target.value);});
 $("#profile-body").addEventListener("submit",e=>{const f=e.target.closest("form[data-form]");if(!f)return;e.preventDefault();submitAccount(f);});
 $("#profile-body").addEventListener("input",e=>{
   if(e.target.id==="pf-bio"&&$("#pf-count"))$("#pf-count").textContent=e.target.value.length+" / 200";

@@ -37,6 +37,11 @@ A free Supabase project pauses after a week without activity. Open its dashboard
   Unticking the checkbox stops all of this.
 - **Live trip link** (`/#live=…`): opens without an account and shows that passenger's trip on a map: the driver's live location and photo, name, number (with Call and WhatsApp), vehicle, route and arrival time, plus the passenger's own live location while they share it. The link is signed, so it can't be guessed, and it shows nothing once the seat or ride is cancelled or the trip is over.
 
+## My trips and appearance
+
+- **My trips** is split into tabs, each with a count: **Confirmed** (upcoming trips with a confirmed seat, and rides you drive with a confirmed rider), **Waiting** (requests you sent, and rides you offer with no confirmed rider yet), **Completed**, and **Cancelled** (rides a driver cancelled, rides you cancelled, and requests that weren't accepted). Requests waiting for your answer stay at the top. Confirmed trips have one-tap **Live location** and **Pay** buttons.
+- **Day and night mode:** the sun/moon button in the header switches between them, and the profile has **Day / Night / Auto** (Auto follows the phone). The choice is remembered on that device.
+
 ## When a driver cancels
 
 Everyone who asked for a seat sees the ride as cancelled. At the top of **My trips** and on the ride itself, Saathi suggests up to 3 other rides on the same route that still have enough free seats. A ride counts as the same route when its pickup and drop are within 25 km of the cancelled ride's, on the same day or a day either side. Women-only rides are suggested only to women. If email is set up, the same suggestions arrive by email, each with a link that opens that ride.
@@ -136,6 +141,7 @@ The site owner's profile shows a **Notifications** card with a **Send test** but
 
 - When a driver uploads their UPI QR on **Offer a ride**, Saathi reads the UPI ID from it, in the browser, and fills in the **UPI ID** field. Drivers can also type the ID.
 - Once a seat is confirmed, the passenger sees **Pay ₹… by UPI** with GPay, PhonePe, Paytm, BHIM and Other buttons. Each opens that app with the driver's UPI ID and the amount already filled in. On Android, tapping the QR opens the phone's list of all UPI apps.
+- It uses the UPI ID and QR on the ride, or, if the ride has none, the ones saved in the driver's profile. It stays on the ride after departure, since people often pay at the drop. **Pay ₹…** buttons also sit under the trip in **My trips** and on the live map. If the driver has no UPI ID or QR at all, the passenger is told to pay in cash or ask on WhatsApp.
 - Some UPI apps limit payments to personal UPI IDs that start from a link. If that happens, the passenger can scan the QR or pay to the UPI ID shown.
 
 ## Location features (free, no keys)
