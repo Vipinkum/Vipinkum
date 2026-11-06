@@ -529,11 +529,6 @@ details.card form{display:grid;gap:14px}
 .qrrow img{width:120px;height:120px;object-fit:contain;background:#fff;border-radius:10px;display:block;border:1px solid var(--line)}
 .qrrow span{display:block;color:var(--muted);font-size:14px;margin-bottom:6px}
 .qrrow a{font:700 14px var(--f-display);color:var(--brand)}
-.setup{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);padding-top:12px}
-.setup>div{flex:1;min-width:0}
-.setup b{display:block;font-family:var(--f-display)}
-.setup span{display:block;color:var(--muted);font-size:13.5px}
-#setup-out:empty{display:none}
 /* chat attachments */
 .bub .photo{display:block;margin:-2px -6px 4px}
 .bub .photo img{display:block;max-width:min(260px,62vw);max-height:320px;border-radius:12px;background:var(--surface-2)}
@@ -935,7 +930,8 @@ const STATUSES=["pending","confirmed","declined","cancelled"];
 function normBooking(d){return{id:str(d.id,64),rideId:str(d.rideId,64),seats:clampInt(d.seats,1,6),status:STATUSES.includes(d.status)?d.status:"pending",
   createdAt:Number(d.createdAt)||0,decidedAt:Number(d.decidedAt)||0,message:str(d.message,200),mine:d.mine===true,name:str(d.name,40)||"Passenger",
   gender:str(d.gender,10),phone:str(d.phone,16),driverPhone:str(d.driverPhone,16),photo:mediaPath(d.photo),qr:mediaPath(d.qr),upi:UPI_RE.test(d.upi||"")?d.upi:"",conv:str(d.conv,140),
-  token:TOKEN_RE.test(d.token||"")?d.token:"",altSent:{wa:!!(d.altSent&&d.altSent.wa),sms:!!(d.altSent&&d.altSent.sms)}};}
+  token:TOKEN_RE.test(d.token||"")?d.token:"",altSent:{wa:!!(d.altSent&&d.altSent.wa),sms:!!(d.altSent&&d.altSent.sms)},
+  coRiders:Array.isArray(d.coRiders)?d.coRiders.slice(0,6).map(n=>str(n,40)).filter(Boolean):[]};}
 /* The signed link that shows one passenger's trip live to their family contact */
 const TOKEN_RE=/^[a-f0-9]{6,64}\.[A-Za-z0-9_-]{22}$/;
 function normConv(d){const o=d.other||{},r=d.ride;return{id:str(d.id,140),rideId:str(d.rideId,64),role:d.role==="driver"?"driver":"passenger",
@@ -1376,6 +1372,7 @@ function sheetHTML(r){
       if(!past)f+=cancelBtn("Cancel request");
     }else if(b&&b.status==="confirmed"){
       f=stateHTML("ok",ICON.tick,"Your seat is confirmed",plural(b.seats,"seat","seats")+" · "+inr(b.seats*r.price)+" to pay "+esc(dn)+".");
+      f+=coRidersHTML(b);
       if(b.driverPhone){
         const text="Hi "+dn+", this is "+S.user.name+" from Saathi. My "+plural(b.seats,"seat","seats")+" on your ride from "+tripLine(r)+" "+(b.seats===1?"is":"are")+" confirmed. Where should I meet you?";
         f+='<div class="row"><a class="btn wa" href="'+esc(waUrl(b.driverPhone,text))+'" target="_blank" rel="noopener" aria-label="WhatsApp '+esc(dn)+'">'+ICON.chat+'WhatsApp</a><a class="btn ghost" href="'+esc(telUrl(b.driverPhone))+'">'+ICON.phone+'Call</a></div><p class="hint">'+esc(dn)+"’s number: <b>"+esc(fmtPhone(b.driverPhone))+"</b></p>";
@@ -1403,6 +1400,10 @@ function sheetHTML(r){
   if(!isDriver&&S.user&&r.status==="open")f+='<a class="btn ghost wide" href="#chat='+esc(r.id+"."+S.user.id)+'">'+ICON.chat+"Message "+esc(dn)+"</a>";
   return h+'<div class="foot">'+f+"</div>";
 }
+/* Once their seat is confirmed, a passenger sees who else is riding: names only */
+function coRidersHTML(b){const n=b.coRiders||[];
+  return'<div class="pax"><div class="eyebrow">Other passengers</div>'+(n.length?n.map(x=>'<div class="pax-row">'+avatarHTML({name:x})+"<span>"+esc(x)+"</span></div>").join("")
+    :'<p class="hint">No other passenger is confirmed on this ride yet.</p>')+"</div>";}
 /* The passenger's alternative number (family or a friend) gets the driver's details and a link that shows the trip live.
    Saathi sends it on its own when WhatsApp or SMS is set up; otherwise one tap opens WhatsApp with it ready. */
 const liveLink=b=>b&&b.token?location.origin+"/#live="+b.token:"";
@@ -1492,7 +1493,6 @@ function profileHTML(){
   f+='<p class="err" role="alert" hidden></p><p class="okmsg" role="status" hidden></p><button class="btn primary" type="submit">Save changes</button></form>';
   let side='<div class="pf-side"><div class="card"><div class="eyebrow">Your activity</div><div class="stats" id="pf-stats"></div></div>';
   side+=themeHTML();
-  if(S.features.admin)side+=setupHTML();
   side+='<details class="card"><summary>Change password</summary><form data-form="password" novalidate>'+fld("pw-cur","Current password",pwHTML("pw-cur","current","current-password"))+fld("pw-new","New password",pwHTML("pw-new","password","new-password"),"At least 8 characters. Other devices will be logged out.")
     +'<p class="err" role="alert" hidden></p><p class="okmsg" role="status" hidden></p><button class="btn ghost" type="submit">Change password</button></form></details>';
   side+='<button type="button" class="btn ghost wide" data-act="logout">Log out</button></div>';
@@ -1591,9 +1591,6 @@ async function act(a,el){
   if(a==="play"){toggleAudio(id);return;}
   if(a==="copy-upi"){try{await navigator.clipboard.writeText(id);toast("UPI ID copied");}catch(_){toast("UPI ID: "+id,6000);}return;}
   if(a==="attach"){const i=$("#c-file");if(i)i.click();return;}
-  if(a==="test-mail"||a==="test-sms"||a==="test-wa"){const out=$("#setup-out");if(out)out.textContent="Sending…";
-    try{const d=await api("POST","/api/auth",{action:{"test-mail":"testmail","test-sms":"testsms","test-wa":"testwa"}[a]});if(out)out.textContent=d.message;}
-    catch(x){if(out)out.textContent=x.message;}return;}
   if(a==="share-start"){startSharing(id||(r&&r.id));return;}
   if(a==="share-stop"){stopSharing();toast("Stopped sharing your location");return;}
   if(a==="trk-fit"){TV.fitted=false;drawTrack();return;}
@@ -1694,17 +1691,6 @@ function payHTML(r,b,dn){
     +"<div><span>"+(links?"Tap the QR to choose from all your UPI apps.":"Scan this with any UPI app.")+'</span><a href="'+esc(b.qr)+'" download="saathi-upi-qr.jpg">Save QR</a></div></div>';
   h+='<p class="hint">If an app won’t pay from a link, scan the QR or pay to the UPI ID. Cash on the day works too.</p></div>';
   return h;
-}
-
-/* ---------- site setup checks for the owner (email, SMS and WhatsApp) ---------- */
-function setupHTML(){
-  const f=S.features;
-  const row=(name,on,offText,act)=>'<div class="setup"><div><b>'+name+"</b><span>"+(on?"On":offText)+'</span></div><button type="button" class="btn ghost sm" data-act="'+act+'"'+(on?"":" disabled")+">Send test</button></div>";
-  return'<div class="card"><div class="eyebrow">Notifications · only you see this</div>'
-    +row("Email",f.email,"Off. Add SMTP_USER, SMTP_PASS and MAIL_FROM in Vercel, then redeploy.","test-mail")
-    +row("SMS",f.sms,"Off. Add SMSGATE_USER and SMSGATE_PASS in Vercel, then redeploy.","test-sms")
-    +row("WhatsApp",f.wa,"Off. Riders send their trip link on WhatsApp in one tap. To send it automatically, add WHATSAPP_TOKEN and WHATSAPP_PHONE_ID in Vercel (see the README), then redeploy.","test-wa")
-    +'<p class="hint" id="setup-out" role="status"></p></div>';
 }
 
 /* ---------- chat attachments: photos and PDFs ---------- */

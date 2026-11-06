@@ -133,10 +133,6 @@ Without this, passengers send their family contact the trip on WhatsApp with one
 
 If a WhatsApp message fails, Saathi sends the same details by SMS when SMS is set up.
 
-## Checking email, SMS and WhatsApp
-
-The site owner's profile shows a **Notifications** card with a **Send test** button for email, SMS and WhatsApp. The WhatsApp test sends the `saathi_trip` template to the owner's own number. If a test fails, the card shows the error the mail, SMS or WhatsApp server gave. The owner is the account whose email matches `ADMIN_EMAIL`, or `MAIL_FROM` if `ADMIN_EMAIL` isn't set.
-
 ## UPI payments
 
 - When a driver uploads their UPI QR on **Offer a ride**, Saathi reads the UPI ID from it, in the browser, and fills in the **UPI ID** field. Drivers can also type the ID.

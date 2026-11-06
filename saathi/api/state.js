@@ -1,6 +1,7 @@
 // GET /api/state: the signed-in user, every ride, the bookings and chats that user may see.
-// Everyone sees how many seats are confirmed on a ride. Names are only shared between a
-// passenger and that ride's driver; phone numbers and the payment QR only once the driver confirms.
+// Everyone sees how many seats are confirmed on a ride. Names are shared between a passenger and
+// that ride's driver, and a confirmed passenger sees the names (only) of the other confirmed
+// passengers. Phone numbers and the payment QR only once the driver confirms.
 const L = require("./_lib");
 
 const ACTIVE = ["pending", "confirmed"];
@@ -85,6 +86,9 @@ module.exports = async (req, res) => {
           // The live trip link for the passenger's family contact, and whether Saathi already sent it.
           o.token = L.shareToken(b.id);
           o.altSent = b.altSent ? { wa: !!b.altSent.wa, sms: !!b.altSent.sms } : null;
+          // The other passengers whose seat is confirmed on this ride: only their names, nothing else.
+          o.coRiders = bookings.filter((x) => x.rideId === b.rideId && x.uid !== me && statusOf(x) === "confirmed")
+            .map((x) => { const u = userById.get(x.uid); return u ? u.name : x.name || "Passenger"; });
         }
         outBookings.push(o);
       }
